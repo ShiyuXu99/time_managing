@@ -5,7 +5,7 @@ import React from 'react'
 function Stats(){
     return(
         <div>
-            This is Status
+            This is update Status
 
         </div>
     )
