@@ -15,7 +15,8 @@ body {
     width: 240px;
     padding-top: 30vh;;
     border-right: lightgray 1px solid;
-    display: flex;
+    position: fixed;
+    /*z-index: 1;*/
 }
 
 .SidebarList {
@@ -43,6 +44,8 @@ body {
     background-color: aliceblue;
 }
 
+
+
 /*.SidebarList #active {*/
 /*    background-color: aliceblue;*/
 /*}*/
@@ -58,7 +61,53 @@ body {
 }
 
 
+
 .mainContents {
+    height: 100vh;
     width: 100%;
-    background-color: bisque;
+    margin-left: 240px;
+
+}
+
+
+/*.DonutMain{*/
+/*    width: 100%;*/
+/*    height: 100%;*/
+/*    margin-bottom: 5vh;*/
+/*    text-align: center;*/
+/*    background-color: aliceblue;*/
+/*}*/
+
+.box {
+    padding: 2vh;
+    /*background-color: aliceblue;*/
+}
+.rightSection {
+    height: 94vh;
+}
+.leftSection {
+    height: 94vh;
+}
+.donutGraph{
+    width: 40vh;
+    position: relative;
+    margin: 0 auto;
+    padding: 3px;
+}
+
+
+.rowItem {
+    width: 100%;
+    height: 60px;
+    align-items: flex-start;
+    list-style-type: none;
+    display: flex;
+    background-color: aqua;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+
+}
+.items {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
 }
