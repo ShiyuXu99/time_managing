@@ -3,22 +3,23 @@ import {useEffect, useState} from 'react'
 import '../../App.css'
 import {projectFirestore} from '../../firebase/config'
 import TimerDonutChart from './TimerDonutChart'
+import LeftSection from "./LeftSection";
 import AddTaskModal from "./AddTaskModal";
-import AddCircleIcon from '@mui/icons-material/AddCircle';import AlarmOnIcon from '@mui/icons-material/AlarmOn';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 import {
-    Box, Button,
+    Box, Button, FormControl,
     Grid,
-    IconButton,
+    IconButton, InputLabel,
     List,
     ListItem,
     ListItemAvatar, ListItemIcon,
-    ListItemText,
-    Paper,
+    ListItemText, MenuItem,
+    Paper, Select,
     Slider,
     styled
 } from "@mui/material";
 import CircleIcon from '@mui/icons-material/Circle';
-import Avatar from '@mui/material/Avatar';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -33,7 +34,13 @@ function Timer(){
     const [color, setColor] = useState(null)
     const [dense, setDense] = React.useState(false);
 
-    const data = [
+
+
+    const handleChange = (event) => {
+        setColor(event.target.value);
+    };
+
+    const dataList = [
         {
             title: "学习",
             time: '3h',
@@ -48,27 +55,19 @@ function Timer(){
             title: "吃饭",
             time: '2.5h',
             color: "#B98564",
+        }, {
+            title: "学习",
+            time: '3h',
+            color: "#498583",
+        },
+        {
+            title: "画画",
+            time:'1h',
+            color: "#959BB9",
         },
     ]
 
-    const marks = [
-        {
-            value: 30,
-            label: '30min',
-        },
-        {
-            value: 60,
-            label: '60min',
-        },
-    ];
 
-    function generate(element) {
-        return data.map((value) =>
-            React.cloneElement(element, {
-                key: value,
-            }),
-        );
-    }
 
     useEffect(()=>{
             projectFirestore.collection('adminUser').doc('colorCode').onSnapshot((doc)=>{
@@ -80,75 +79,31 @@ function Timer(){
         <Box sx={{ flexGrow: 1 }} className = "box">
 
             <Grid container spacing={2}>
-                <Grid item xs = {2.5}>
+                <Grid item xs = {3} className="leftBlock">
                     <Item>
-                        <div className="leftSection">
-                            <Grid container >
-                                <Grid item xs={12} alignItems={"center"}>
-                                    <Box sx={{ width: '80%', height: '20vh', paddingTop: '30px', paddingLeft: '20px' }}>
-                                        <h2>Add Time</h2>
-                                        <Slider
-                                            aria-label="Custom marks"
-                                            defaultValue={30}
-                                            step={10}
-                                            valueLabelDisplay="auto"
-                                            marks={marks}
-                                            min={20} max={70}
-                                        />
-                                    </Box>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <box>
-                                        <h2>Task Lists</h2>
-                                        <List dense={dense}>
-                                            {data.map((val, key) => (
-                                                <ListItem secondaryAction={
-                                                    <IconButton
-                                                        edge="end"
-                                                        style={{ color: val.color}}>
-                                                        <AddCircleIcon sx={{ fontSize: "30px" }}/>
-                                                    </IconButton>
-                                                }
-                                                >
-                                                    <ListItemAvatar>
-                                                        <CircleIcon
-                                                            style={{ color: val.color}}
-                                                            sx={{ fontSize: "30px" }}
-                                                        />
-                                                    </ListItemAvatar>
-                                                    <ListItemText
-                                                        primary= {val.title}
-                                                        secondary={val.time}
-                                                    />
-
-
-                                                    {/*<IconButton edge="end">*/}
-                                                    {/*    <AddCircleIcon style={{ color: val.color}}/>*/}
-                                                    {/*</IconButton>*/}
-
-                                                </ListItem>
-                                            ))}
-                                        </List>
-
-
-                                        <AddTaskModal/>
-
-                                    </box>
-                                </Grid>
-                            </Grid>
-
-                        </div>
+                        <LeftSection/>
                     </Item>
                 </Grid>
-                <Grid item xs = {9.5}>
+
+                <Grid item xs = {9} className="rightBlock">
                     <Item>
                         <div className="rightSection">
-                            <TimerDonutChart/>
+                            <div className="graphRight">
+                                <TimerDonutChart/>
+
+                                <div className="TimerRight">
+                                    <h1 style={{paddingTop: '100px'}}>00:00</h1>
+                                </div>
+                            </div>
+
+
+
                         </div>
                     </Item>
 
                 </Grid>
             </Grid>
+
             </Box>
     )
 }

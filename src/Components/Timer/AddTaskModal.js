@@ -2,6 +2,7 @@ import React from 'react'
 import {Box, Button, MenuItem, Modal, TextField, Typography} from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CircleIcon from '@mui/icons-material/Circle';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 
 const style = {
@@ -23,8 +24,8 @@ const style = {
 
 function AddTaskModal(){
     const [open, setOpen] = React.useState(false);
-    const [currency, setCurrency] = React.useState('EUR');
-    const currencies = [
+    const [color, setColor] = React.useState('EUR');
+    const colorList = [
         {
             value: '#597493',
         },
@@ -39,23 +40,26 @@ function AddTaskModal(){
 
 
     const handleChange = (event) => {
-        setCurrency(event.target.value);
+        setColor(event.target.value);
     };
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
     return(
         <div>
-            <Button
-                variant="outlined"
-                startIcon={<AddCircleIcon />}
-                onClick={handleOpen}
+            <div className= "bottomButton"
             >
-                Add Task
-            </Button>
-            {/*<Button onClick={handleOpen}>Open modal</Button>*/}
+                <Button
+                    variant="outlined"
+                    startIcon={<AddCircleIcon />}
+                    onClick={handleOpen}
+                >
+                    Add Task
+                </Button>
+            </div>
+
             <Modal
-                hideBackdrop
+                // hideBackdrop
                 open={open}
                 onClose={handleClose}
                 aria-labelledby="modal-modal-title"
@@ -84,11 +88,11 @@ function AddTaskModal(){
                         id="outlined-select-currency"
                         select
                         label="Select"
-                        value={currency}
+                        value={color}
                         onChange={handleChange}
                         helperText="Please select a color"
                     >
-                        {currencies.map((option) => (
+                        {colorList.map((option) => (
                             <MenuItem
                                 key={option.value}
                                 value= {option.value}
@@ -98,9 +102,13 @@ function AddTaskModal(){
                             </MenuItem>
                         ))}
                     </TextField>
-                    <Button variant="outlined"  onClick={handleClose}> Add Task</Button>
-
-
+                    <Button
+                        variant="outlined"
+                        startIcon={<AddCircleOutlineIcon />}
+                        onClick={handleClose}
+                    >
+                        Add
+                    </Button>
                 </Box>
             </Modal>
         </div>
