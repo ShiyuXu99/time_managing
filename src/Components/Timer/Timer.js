@@ -90,13 +90,10 @@ function Timer(){
                         <div className="rightSection">
                             <div className="graphRight">
                                 <TimerDonutChart/>
-
                                 <div className="TimerRight">
                                     <h1 style={{paddingTop: '100px'}}>00:00</h1>
                                 </div>
                             </div>
-
-
 
                         </div>
                     </Item>

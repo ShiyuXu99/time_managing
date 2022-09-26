@@ -60,6 +60,20 @@ function LeftSection(){
             time: '3h',
             color: "#498583",
         },
+        {
+            title: "吃饭",
+            time: '2.5h',
+            color: "#B98564",
+        }, {
+            title: "学习",
+            time: '3h',
+            color: "#498583",
+        },
+        {
+            title: "学习",
+            time: '3h',
+            color: "#498583",
+        },
     ]
 
     const [show, setShow] = useState(false);
@@ -73,7 +87,7 @@ function LeftSection(){
         <div className="leftSection">
 
             <div style={{ width: '90%', height: '14vh', paddingTop: '15px', paddingLeft: '20px' }}>
-                <h2>Add Time</h2>
+                <h3>Add Time</h3>
                 <Slider
                     aria-label="Custom marks"
                     defaultValue={30}
@@ -84,21 +98,25 @@ function LeftSection(){
                 />
             </div>
 
-            <div style={{width: '95%', marginLeft:'5px'}}>
-                <h2>Task Lists</h2>
+            <div style={{width: '95%', marginLeft:'5px', marginTop: '20px'}}>
+                <h3>Task Lists</h3>
+                <List style={{maxHeight: '50vh', overflow: 'auto'}} >
 
-                <List>
+                {/* <List> */}
                     {data.map((val, key) => (
-                        <ListItem style={{ marginTop: '-1.2%'}}>
+                        <ListItem style={{ marginTop: '-1%'}}>
                             <ListItemAvatar>
 
                                 <IconButton
                                     style={{ color: val.color}}
                                 >
-                                    <CircleIcon sx={{ fontSize: "30px" }}/>
+                                    <CircleIcon sx={{ fontSize: "25px" }}/>
                                 </IconButton>
                             </ListItemAvatar>
                             <ListItemText
+                                primaryTypographyProps={{fontSize: '14px'}} 
+                                secondaryTypographyProps={{fontSize: '12px'}} 
+
                                 primary= {val.title}
                                 secondary={val.time}
                             />
@@ -107,14 +125,14 @@ function LeftSection(){
                                     edge="end"
                                     style={{ color: val.color, marginRight: '1.5px'}}
                                 >
-                                    <DriveFileRenameOutlineIcon sx={{ fontSize: "30px" }}/>
+                                    <DriveFileRenameOutlineIcon sx={{ fontSize: "25px" }}/>
                                 </IconButton>
 
                                 <IconButton edge="end"
                                             style={{ color: val.color}}
                                             onClick={handleShow}
                                 >
-                                    <PlayCircleFilledWhiteIcon sx={{ fontSize: "30px" }}/>
+                                    <PlayCircleFilledWhiteIcon sx={{ fontSize: "25px" }}/>
                                 </IconButton>
                             </ListItemIcon>
 
@@ -123,14 +141,11 @@ function LeftSection(){
                     ))}
                 </List>
             </div>
-
             <TimerModal
                 handleShow = {handleShow}
                 show = {show}
                 handleClose = {handleClose}
             />
-
-
             <AddTaskModal/>
 
 

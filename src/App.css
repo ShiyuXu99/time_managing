@@ -149,3 +149,12 @@ body {
         min-width: 300px;
     }
 }
+
+
+
+*{
+    -ms-overflow-style: none;
+}
+::-webkit-scrollbar {
+    display: none;
+}
