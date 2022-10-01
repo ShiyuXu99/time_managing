@@ -1,6 +1,6 @@
 import './App.css';
 import Sidebar from "./Components/Sidebar";
-import Timer from './Components/Timer/Timer'
+import Timer from './Components/RightSectionPage/Timer'
 import Stats from "./Components/Stats";
 import {
     BrowserRouter as Router,

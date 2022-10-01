@@ -1,6 +1,6 @@
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
-import '../../App.css'
+import '../../../App.css'
 import React, { useCallback, useState } from "react";
 import {PieChart, Pie, Sector, Cell, ResponsiveContainer} from "recharts";
 import {Button} from "@mui/material";

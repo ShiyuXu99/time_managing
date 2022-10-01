@@ -1,19 +1,13 @@
 import React from 'react'
-import {useEffect, useState} from 'react'
+import { useEffect, useState } from 'react'
 import '../../App.css'
-import {projectFirestore} from '../../firebase/config'
-import TimerDonutChart from './TimerDonutChart'
-import LeftSection from "./LeftSection";
-import AddTaskModal from "./AddTaskModal";
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { projectFirestore } from '../../firebase/config'
+import TimerDonutChart from './TimerDonutPage/TimerDonutChart'
+import LeftSection from "../LeftSection/LeftSection";
+import CountdownPage from './CountdownPage/CountdownPage'
 import {
     Box, Button, FormControl,
     Grid,
-    IconButton, InputLabel,
-    List,
-    ListItem,
-    ListItemAvatar, ListItemIcon,
-    ListItemText, MenuItem,
     Paper, Select,
     Slider,
     styled
@@ -30,7 +24,7 @@ const Item = styled(Paper)(({ theme }) => ({
     color: theme.palette.text.secondary,
 }));
 
-function Timer(){
+function TimerPage() {
     const [color, setColor] = useState(null)
     const [dense, setDense] = React.useState(false);
 
@@ -48,7 +42,7 @@ function Timer(){
         },
         {
             title: "画画",
-            time:'1h',
+            time: '1h',
             color: "#959BB9",
         },
         {
@@ -62,37 +56,47 @@ function Timer(){
         },
         {
             title: "画画",
-            time:'1h',
+            time: '1h',
             color: "#959BB9",
         },
     ]
 
+    const [showtimer, setShowTimer] = useState(false)
+    let timerKey = "this is key";
 
 
-    useEffect(()=>{
-            projectFirestore.collection('adminUser').doc('colorCode').onSnapshot((doc)=>{
-                setColor(doc.data());
-            })
-    },[])
+    const handleShowTimer = () => {
+        setShowTimer(!showtimer)
+    }
 
-    return(
-        <Box sx={{ flexGrow: 1 }} className = "box">
+    useEffect(() => {
+        projectFirestore.collection('adminUser').doc('colorCode').onSnapshot((doc) => {
+            setColor(doc.data());
+        })
+    }, [])
+
+    return (
+        <Box sx={{ flexGrow: 1 }} className="box">
 
             <Grid container spacing={2}>
-                <Grid item xs = {3} className="leftBlock">
+                <Grid item xs={3} className="leftBlock">
                     <Item>
-                        <LeftSection/>
+                        <LeftSection
+                            handleShowTimer={handleShowTimer}
+                            timerKey={timerKey}
+                        />
                     </Item>
                 </Grid>
 
-                <Grid item xs = {9} className="rightBlock">
+                <Grid item xs={9} className="rightBlock">
                     <Item>
                         <div className="rightSection">
                             <div className="graphRight">
-                                <TimerDonutChart/>
-                                <div className="TimerRight">
-                                    <h1 style={{paddingTop: '100px'}}>00:00</h1>
-                                </div>
+                                {showtimer ?
+                                    <CountdownPage />
+                                    :
+                                    <TimerDonutChart />
+                                }
                             </div>
 
                         </div>
@@ -101,8 +105,8 @@ function Timer(){
                 </Grid>
             </Grid>
 
-            </Box>
+        </Box>
     )
 }
 
-export default Timer
+export default TimerPage
