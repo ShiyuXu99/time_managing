@@ -3,15 +3,13 @@ import { useEffect, useState } from 'react'
 import { Box, Button, MenuItem, Modal, TextField, Typography } from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CircleIcon from '@mui/icons-material/Circle';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { projectFirestore } from '../../../firebase/config'
+import { projectFirestore } from '../../../../firebase/config'
 
 import './index.css'
 
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
 
@@ -173,7 +171,6 @@ function AddTaskModal() {
                         </Button>
                         <Button
                             variant="outlined"
-
                             onClick={() => setOpen(false)}>Cancel</Button>
                    
                     </DialogActions>

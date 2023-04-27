@@ -1,0 +1,40 @@
+
+.TimerRight {
+    padding-top: 20vh;
+}
+
+.countdownDiv {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.displayTime {
+    display: flex;
+    flex-direction: row;
+    min-width: 400px;
+    /*background-color: #7E9D86;*/
+    min-height: 200px;
+}
+
+.displayHourOuter {
+    display: flex;
+    flex-direction: column;
+}
+.displayHour{
+    font-size: 100px;
+    color: #3c4c65;
+}
+
+.iconClass {
+    display: flex;
+    flex-direction: row;
+    min-width: 200px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.counterLabel{
+    color: #3c4c65;
+}

@@ -7,8 +7,7 @@ import PauseCircleFilledIcon from '@mui/icons-material/PauseCircleFilled';
 import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite';
 import AddTaskModal from "./AddTaskModal/AddTaskModal";
 import TimerModal from "../RightSectionPage/TimerModal";
-import '../../App.css'
-import { grey } from '@mui/material/colors';
+import '../../../App.css'
 
 
 function LeftSection({ handleShowTimer, handleCloseTimer, showtimer }) {

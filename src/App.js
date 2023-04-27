@@ -1,10 +1,8 @@
 import './App.css';
 import Sidebar from "./components/Sidebar";
-import Timer from './components/RightSectionPage/Timer'
-import Stats from "./components/Stats";
+import Timer from './components/TimerPage/Timer'
+import Stats from "./components/StatesData/Stats";
 import {
-    BrowserRouter as Router,
-    HashRouter,
     Routes,
     Route,
 } from "react-router-dom";
