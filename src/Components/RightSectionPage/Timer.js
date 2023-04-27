@@ -12,8 +12,6 @@ import {
     Slider,
     styled
 } from "@mui/material";
-import CircleIcon from '@mui/icons-material/Circle';
-import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -62,13 +60,13 @@ function TimerPage() {
     ]
 
     const [showtimer, setShowTimer] = useState(false)
-    let timerKey = "this is key";
-
 
     const handleShowTimer = () => {
-        setShowTimer(!showtimer)
+        setShowTimer(true)
     }
-
+    const handleCloseTimer = () => {
+        setShowTimer(false)
+    }
     useEffect(() => {
         projectFirestore.collection('adminUser').doc('colorCode').onSnapshot((doc) => {
             setColor(doc.data());
@@ -83,7 +81,8 @@ function TimerPage() {
                     <Item>
                         <LeftSection
                             handleShowTimer={handleShowTimer}
-                            timerKey={timerKey}
+                            handleCloseTimer = {handleCloseTimer}
+                            showtimer = {showtimer}
                         />
                     </Item>
                 </Grid>
@@ -93,7 +92,11 @@ function TimerPage() {
                         <div className="rightSection">
                             <div className="graphRight">
                                 {showtimer ?
-                                    <CountdownPage />
+                                    <CountdownPage 
+                                    handleShowTimer={handleShowTimer}
+                                    handleCloseTimer = {handleCloseTimer}
+                                    showtimer = {showtimer}
+                                    />
                                     :
                                     <TimerDonutChart />
                                 }

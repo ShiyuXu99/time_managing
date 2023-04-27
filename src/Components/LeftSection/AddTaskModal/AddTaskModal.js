@@ -1,30 +1,25 @@
 import React from 'react'
-import {Box, Button, MenuItem, Modal, TextField, Typography} from "@mui/material";
+import { useEffect, useState } from 'react'
+import { Box, Button, MenuItem, Modal, TextField, Typography } from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CircleIcon from '@mui/icons-material/Circle';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { projectFirestore } from '../../../firebase/config'
+
+import './index.css'
+
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    // alignItems: 'center',
-    // textAlign:'center',
-    // border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-    '& .MuiTextField-root': { m: 2, width: '30ch' },
-};
-
-
-
-function AddTaskModal(){
-    const [open, setOpen] = React.useState(false);
-    const [color, setColor] = React.useState('EUR');
+function AddTaskModal() {
+    const [open, setOpen] = useState(false);
+    const [color, setColor] = useState('');
+    const [name, setName] = useState('');
+    const [data, setData] = useState({});
     const colorList = [
         {
             value: '#597493',
@@ -38,16 +33,32 @@ function AddTaskModal(){
 
     ];
 
+    useEffect(() => {
+        projectFirestore.collection('adminUser').doc('taskDatas').onSnapshot((doc) => {
+            setData(doc.data())
+        })
+    }, [])
 
-    const handleChange = (event) => {
-        setColor(event.target.value);
-    };
     const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
 
-    return(
+    const handleClose = () => {
+        projectFirestore.collection("adminUser").doc("taskDatas").set({
+            ...data,
+            [name]: {
+                name: name,
+                color: color,
+                time: 0
+            }
+        })
+        setOpen(false);
+    }
+
+    return (
         <div>
-            <div className= "bottomButton"
+            <div className="bottomButton"
             >
                 <Button
                     variant="outlined"
@@ -57,60 +68,120 @@ function AddTaskModal(){
                     Add Task
                 </Button>
             </div>
-
+            {/* 
             <Modal
-                // hideBackdrop
                 open={open}
                 onClose={handleClose}
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >
-
-                <Box sx={style}
-                     component="form"
-                     // sx={{
-                     //     '& .MuiTextField-root': { m: 1, width: '25ch' },
-                     // }}
-                     noValidate
-                     autoComplete="off"
-                >
-                    <h2>Add Tasks</h2>
-                    <div>
-                    <TextField
-                        required
-                        id="outlined-required"
-                        label="Task Name"
-                        // defaultValue="Please Enter Task Name"
-                    />
-                    </div>
-
+        
+                    <div className='modal-form '>
+                    <h2 className='AddTaskTitle'>Add Tasks</h2>
+                    <div className='model-form-item'>
                     <TextField
                         id="outlined-select-currency"
                         select
-                        label="Select"
+                        label="Select Color"
                         value={color}
-                        onChange={handleChange}
-                        helperText="Please select a color"
+                        onChange={(event)=>{setColor(event.target.value)}}
+                        // helperText="Please select a color"
+                        style = {{width: 100}}
                     >
                         {colorList.map((option) => (
                             <MenuItem
                                 key={option.value}
-                                value= {option.value}
+                                value={option.value}
                             >
-                                {/*{option.label}*/}
-                                {<CircleIcon style={{ color: option.value}}/>}
+                                {<CircleIcon style={{ color: option.value }} />}
                             </MenuItem>
                         ))}
                     </TextField>
+                    <span className='space'>
+                        <TextField
+                            required
+                            id="outlined-select-currency"
+                            label="Task Name"
+                            onChange={(event)=>{setName(event.target.value)}}
+                        />
+                    </span>
+                    </div>
+                    <div className='btndiv'>
+                        <Button
+                            variant="outlined"
+                            // startIcon={<AddCircleOutlineIcon />}
+                            onClick={handleClose}
+                            style = {{width: 200}}
+                        >
+                            Add
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            onClick={() =>setOpen(false)}
+                            style = {{width: 200}}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                    </div>
+            </Modal> */}
+
+
+
+
+            <div>
+                <Dialog open={open} onClose={handleClose}>
+                    <DialogTitle >Add Task</DialogTitle>
+                    <DialogContent>
+                        <div className='model-form-item'>
+                            <TextField
+                                id="outlined-select-currency"
+                                select
+                                label="Select Color"
+                                value={color}
+                                onChange={(event) => { setColor(event.target.value) }}
+                                // helperText="Please select a color"
+                                style={{ width: 150 }}
+                            >
+                                {colorList.map((option) => (
+                                    <MenuItem
+                                        key={option.value}
+                                        value={option.value}
+                                    >
+                                        {<CircleIcon style={{ color: option.value }} />}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                            <span className='space'>
+                                <TextField
+                                    required
+                                    id="outlined-select-currency"
+                                    label="Task Name"
+                                    onChange={(event) => { setName(event.target.value) }}
+                                />
+                            </span>
+                        </div>
+                    </DialogContent>
+                    <DialogActions>
                     <Button
-                        variant="outlined"
-                        startIcon={<AddCircleOutlineIcon />}
-                        onClick={handleClose}
-                    >
-                        Add
-                    </Button>
-                </Box>
-            </Modal>
+                            variant="outlined"
+                            // startIcon={<AddCircleOutlineIcon />}
+                            onClick={handleClose}
+                            // style={{ width: 200 }}
+                        >
+                            Add
+                        </Button>
+                        <Button
+                            variant="outlined"
+
+                            onClick={() => setOpen(false)}>Cancel</Button>
+                   
+                    </DialogActions>
+                </Dialog>
+            </div>
+
+
+
         </div>
     )
 }

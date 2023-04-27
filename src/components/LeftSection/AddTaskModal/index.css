@@ -1,0 +1,34 @@
+.modal-form {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+    align-items: center;
+    text-align: center;
+    border: 2px solid #7E9D86;
+    border-radius: 12px;
+    background-color: white;
+    width: 500px;
+    height: 300px;
+
+}
+
+.model-form-item {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.AddTaskTitle {
+    padding: 20px 50px;
+    background-color: #7E9D86;
+    border-radius: 10px;
+}
+
+.btndiv {
+    margin-bottom: 50px;
+}
+
+.space {
+    margin-left: 20px;
+}

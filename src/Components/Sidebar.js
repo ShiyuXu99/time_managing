@@ -28,7 +28,6 @@ function Sidebar(){
                                 {val.title}
                             </div>
 
-
                         </li>
                     )
                 })}

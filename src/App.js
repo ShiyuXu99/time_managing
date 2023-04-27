@@ -1,18 +1,14 @@
 import './App.css';
-import Sidebar from "./Components/Sidebar";
-import Timer from './Components/RightSectionPage/Timer'
-import Stats from "./Components/Stats";
+import Sidebar from "./components/Sidebar";
+import Timer from './components/RightSectionPage/Timer'
+import Stats from "./components/Stats";
 import {
     BrowserRouter as Router,
     HashRouter,
     Routes,
     Route,
 } from "react-router-dom";
-
-
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+import React from 'react';
 
 
 

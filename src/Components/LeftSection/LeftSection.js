@@ -3,13 +3,15 @@ import { IconButton, List, ListItem, ListItemAvatar, ListItemIcon, ListItemText,
 import CircleIcon from "@mui/icons-material/Circle";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
+import PauseCircleFilledIcon from '@mui/icons-material/PauseCircleFilled';
 import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite';
 import AddTaskModal from "./AddTaskModal/AddTaskModal";
 import TimerModal from "../RightSectionPage/TimerModal";
 import '../../App.css'
+import { grey } from '@mui/material/colors';
 
 
-function LeftSection({ handleShowTimer, timerKey}) {
+function LeftSection({ handleShowTimer, handleCloseTimer, showtimer }) {
     const marks = [
         {
             value: 30,
@@ -75,17 +77,22 @@ function LeftSection({ handleShowTimer, timerKey}) {
             color: "#498583",
         },
     ]
+    const [disabled, setDisabled] = useState(false)
 
-    // const [show, setShow] = useState(false);
+    let handleTimer = () =>{
+        if(showtimer){
+            handleCloseTimer();
+            setDisabled(false)
 
-    // const handleClose = () => setShow(false);
-    // const handleShow = () => setShow(true);
-    console.log(timerKey)
-
+        }
+        else{
+            handleShowTimer();
+            setDisabled(true)
+        }
+    }
 
     return (
         <div className="leftSection">
-
             <div style={{ width: '90%', height: '14vh', paddingTop: '15px', paddingLeft: '20px' }}>
                 <h3>Add Time</h3>
                 <Slider
@@ -105,7 +112,8 @@ function LeftSection({ handleShowTimer, timerKey}) {
                         <ListItem style={{ marginTop: '-1%' }}>
                             <ListItemAvatar>
                                 <IconButton
-                                    style={{ color: val.color }}
+                                    disabled= {disabled}
+                                    style={disabled? { color: 'grey' } : { color: val.color }}
                                 >
                                     <CircleIcon sx={{ fontSize: "25px" }} />
                                 </IconButton>
@@ -119,29 +127,26 @@ function LeftSection({ handleShowTimer, timerKey}) {
                             <ListItemIcon>
                                 <IconButton
                                     edge="end"
-                                    style={{ color: val.color, marginRight: '1.5px' }}
+                                    disabled= {disabled}
+                                    style={disabled? { color: 'grey', marginRight: '1.5px'  } : { color: val.color, marginRight: '1.5px'  }}
                                 >
                                     <DriveFileRenameOutlineIcon sx={{ fontSize: "25px" }} />
                                 </IconButton>
 
                                 <IconButton edge="end"
-                                    style={{ color: val.color }}
-                                    onClick={handleShowTimer}
+                                    disabled= {disabled}
+                                    style={disabled? { color: 'grey' } : { color: val.color }}
+                                    onClick={handleTimer}
                                 >
-                                    <PlayCircleFilledWhiteIcon sx={{ fontSize: "25px" }} />
+                                    {!showtimer ? <PlayCircleFilledWhiteIcon sx={{ fontSize: "25px" }} /> 
+                                    : <PauseCircleFilledIcon sx={{ fontSize: "25px" }} />}
                                 </IconButton>
                             </ListItemIcon>
                         </ListItem>
                     ))}
                 </List>
             </div>
-            {/* <TimerModal
-                handleShow = {handleShow}
-                show = {show}
-                handleClose = {handleClose}
-            /> */}
             <AddTaskModal />
-
 
         </div>
 

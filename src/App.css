@@ -104,9 +104,8 @@ body {
     align-items: flex-start;
     list-style-type: none;
     display: flex;
-    background-color: aqua;
+    /* background-color: aqua; */
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-
 }
 .items {
     display: flex;
@@ -130,19 +129,10 @@ body {
 
 .graphRight {
     width: 100%;
-    background-color: aqua;
+    /* background-color: aqua; */
     position: relative;
-
 }
 
-.TimerRight {
-    position: absolute;
-    text-align: center;
-    width: 100%;
-    top: 0;
-    left: 0;
-    background-color: antiquewhite;
-}
 
 @media only screen and (max-width: 800px) {
     .leftBlock {
