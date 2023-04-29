@@ -1,62 +1,68 @@
 import React from 'react'
 import {useEffect, useState} from 'react'
-import {Button, Input, InputAdornment, MenuItem, Modal, TextField, ThemeProvider, Typography} from "@mui/material";
+import {Box, Button, MenuItem, Modal, TextField, ThemeProvider, Typography} from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CircleIcon from '@mui/icons-material/Circle';
+import {projectFirestore} from '../../../../../firebase/config'
+import './index.css'
+
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import './index.css'
-import {projectFirestore} from "../../../../firebase/config";
-import {theme} from "../../../../theme";
+import {theme} from "../../../../../theme";
+import {colorList} from "../../../../../utils/colorList";
 
 
-function EditTaskTime({open, setOpen, editItem}) {
+function AddTaskModal() {
+    const [open, setOpen] = useState(false);
     const [color, setColor] = useState('');
     const [name, setName] = useState('');
     const [data, setData] = useState({});
 
-    const colorList = [
-        {
-            value: '#597493',
-        },
-        {
-            value: '#959BB9',
-        },
-        {
-            value: '#7E9D86',
-        },
-
-    ];
+    const [warning, setWarning] = useState(false);
 
     useEffect(() => {
-        projectFirestore.collection('adminUser').doc('taskDatas').onSnapshot((doc) => {
+        projectFirestore.collection('adminUser').doc('taskLists').onSnapshot((doc) => {
             setData(doc.data())
         })
     }, [])
 
+    const handleOpen = () => setOpen(true);
 
     const handleClose = () => {
-        projectFirestore.collection("adminUser").doc("taskDatas").set({
-            ...data,
-            [name]: {
-                name: name,
+        let key = color + name;
+        if(Object.keys(data).includes(key)) setWarning(true)
+        else{
+            let tempData = data;
+            tempData[key] = {
+                title: name,
                 color: color,
                 time: 0
             }
-        })
-        setOpen(false);
+            projectFirestore.collection("adminUser").doc("taskLists").set(tempData)
+            setWarning(false)
+            setOpen(false);
+        }
+
     }
 
     return (
         <div>
             <ThemeProvider theme={theme}>
+
+                <Button
+                    variant="outlined"
+                    startIcon={<AddCircleIcon/>}
+                    onClick={handleOpen}
+                >
+                    Add Task
+                </Button>
                 <div>
                     <Dialog
-                        PaperProps={{sx: { height: '380px', width: '570px'}}}
+                        PaperProps={{sx: {height: "25%", width: '570px'}}}
                         open={open} onClose={handleClose}>
-                        <DialogTitle>Edit Task</DialogTitle>
+                        <DialogTitle>Add Task</DialogTitle>
                         <DialogContent>
                             <div className="initialize_inputs">
                                 <div className="color_input">
@@ -64,14 +70,13 @@ function EditTaskTime({open, setOpen, editItem}) {
                                         id="outlined-select-currency"
                                         select
                                         label="Select"
-                                        value={editItem.color}
-                                        helperText="Task color"
-                                        style={{width: 70}}
+                                        value={color}
+                                        helperText="select color"
+                                        style={{width: 100}}
                                         onChange={(event) => {
                                             setColor(event.target.value)
                                         }}
                                         color='primary'
-                                        variant="standard"
                                     >
                                         {colorList.map((option) => (
                                             <MenuItem
@@ -82,57 +87,21 @@ function EditTaskTime({open, setOpen, editItem}) {
                                             </MenuItem>
                                         ))}
                                     </TextField>
-
                                 </div>
 
                                 <TextField
                                     className="text_input"
-                                    label="task name"
-                                    defaultValue={editItem.title}
+                                    required
+                                    id="outlined-required"
+                                    label="Task Name"
                                     helperText="Name for task"
                                     color='primary'
-                                    variant="standard"
                                     onChange={(event) => {
                                         setName(event.target.value)
                                     }}
                                 />
                             </div>
-
-                            <div>
-                                <h3>Edit Time Spend</h3>
-                            </div>
-                            <div className="initialize_inputs">
-                                <div className="color_input">
-
-
-                                    <TextField
-                                        id="outlined-number"
-                                        label="Hours"
-                                        type="number"
-                                        style={{width: 70}}
-                                        defaultValue='1'
-
-                                        InputLabelProps={{
-                                            shrink: true,
-                                        }}
-                                    />
-                                </div>
-
-
-                                <TextField
-                                    id="outlined-number"
-                                    label="Minutes"
-                                    type="number"
-                                    style={{width: 120}}
-                                    defaultValue='1'
-
-                                    InputLabelProps={{
-                                        shrink: true,
-                                    }}
-                                />
-                            </div>
-
-
+                            {warning && <p className="warning_message"> *This task has already been created. Please use another name.</p>}
                         </DialogContent>
                         <DialogActions>
                             <Button
@@ -165,4 +134,4 @@ function EditTaskTime({open, setOpen, editItem}) {
     )
 }
 
-export default EditTaskTime
+export default AddTaskModal

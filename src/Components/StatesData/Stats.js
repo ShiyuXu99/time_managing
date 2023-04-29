@@ -4,6 +4,7 @@ import {
     styled
 } from "@mui/material";
 import Box from '@mui/material/Box';
+import './index.css'
 
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -16,31 +17,29 @@ const Item = styled(Paper)(({ theme }) => ({
 
 function Stats(){
     return (
-        <div style={{ width: '100%', height: '100%' }}>
-            {/*<Box className="box">*/}
-                {/*<Box sx={{ display: 'flex', flexWrap: 'wrap' }}>*/}
-                <div className="stat_container">
+        <div className="stat_page">
+                <div className="left_stat_container">
                     <div className="upper_row_container">
-                        <div className="graph_container">
+                        <Item className="graph_container">
 
-                        </div>
-                        <div className="graph_container">
+                        </Item>
+                        <Item className="graph_container">
 
-                        </div>
-                        <div className="graph_container">
+                        </Item>
+                    </div>
 
-                        </div>
+                    <div className="lower_row_container">
+                        <Item className="main_graph_container">
+
+                        </Item>
                     </div>
                 </div>
-                    <Item className="leftBlock">
-                        </Item>
-                    <Item className="rightBlock">
-                        <div className="rightSection">
+            <div className="right_stat_container">
+                <Item className="time_graph_container">
 
-                        </div>
-                    </Item>
-                {/*</Box>*/}
-            {/*</Box>*/}
+                </Item>
+            </div>
+
         </div>
     )
 }

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import Modal from 'react-bootstrap/Modal';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ReplayIcon from '@mui/icons-material/Replay';
@@ -8,8 +8,10 @@ import {Button, IconButton} from "@mui/material";
 import './index.css'
 
 import { useStopwatch } from 'react-timer-hook';
+import { recordToData} from "../../../../utils/calculateTimeSpend";
+import {projectFirestore} from "../../../../firebase/config";
 
-function MyStopwatch({ handleShowTimer, handleCloseTimer, showtimer}) {
+function MyStopwatch({ setShowTimer, timerItem}) {
   let {
     seconds,
     minutes,
@@ -19,6 +21,7 @@ function MyStopwatch({ handleShowTimer, handleCloseTimer, showtimer}) {
     pause,
   } = useStopwatch({ autoStart: true });
 
+
   let convertTime = (s) =>{
     if(s < 10) return `0${s}`
     else return s
@@ -27,12 +30,36 @@ function MyStopwatch({ handleShowTimer, handleCloseTimer, showtimer}) {
   minutes = convertTime(minutes)
   hours = convertTime(hours)
 
-  let handleStop = () =>{
-    pause();
-    handleCloseTimer();
+    const dbData = projectFirestore.collection('adminUser');
+
+    const [taskData, setTaskData] = useState({})
+    const [taskByDate, setTaskByDate] = useState({})
+
+    useEffect(() => {
+        dbData.doc('taskData').onSnapshot((doc) => {
+            setTaskData(doc.data())
+        })
+        dbData.doc('taskDataByDate').onSnapshot((doc) => {
+            setTaskByDate(doc.data())
+        })
+    }, [])
+
+  let handleStop = () => {
+      pause();
+      const [data, dateData] = recordToData(4, minutes, seconds, timerItem, taskData, taskByDate)
+      dbData.doc('taskData').set(data)
+      dbData.doc('taskDataByDate').set(dateData)
+
+      setShowTimer(false);
   }
 
-  const toggleStartPause = () => {
+
+    useEffect(() => {
+        if(Number(hours > 6)) handleStop()
+    }, [seconds])
+
+
+    const toggleStartPause = () => {
       if(isRunning) pause()
       else start()
   }
@@ -133,13 +160,13 @@ function MyStopwatch({ handleShowTimer, handleCloseTimer, showtimer}) {
   );
 }
 
-export default function CountdownPage({ handleShowTimer, handleCloseTimer, showtimer }) {
+export default function CountdownPage({ setShowTimer, timerItem }) {
+
   return (
     <div className="TimerRight">
         <MyStopwatch
-         handleShowTimer={handleShowTimer}
-         handleCloseTimer = {handleCloseTimer}
-         showtimer = {showtimer}
+            setShowTimer = {setShowTimer}
+            timerItem = {timerItem}
         />
      </div>
   );

@@ -1,5 +1,6 @@
 .graphDiv {
     display: flex;
+    flex-direction: column;
     width: 100%;
     align-items: center;
     justify-content: center;
@@ -10,6 +11,10 @@
     height: 500px;
 }
 
+.add_task_btn_container{
+    margin-top: 60px;
+    width: 100%;
+}
 
 @media screen and (max-width: 900px) {
     .graphDivInner{

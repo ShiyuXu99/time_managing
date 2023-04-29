@@ -1,5 +1,5 @@
 .leftBlock {
-    min-width: 400px;
+    min-width: 350px;
     margin-right: 10px;
 }
 
@@ -15,9 +15,13 @@
 .rightSection {
     height: 96vh;
 }
+
 .leftSection {
-    min-height: 96vh;
+    height: 96vh;
 }
+
+
+
 
 
 .graphRight {
