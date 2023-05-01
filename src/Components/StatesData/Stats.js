@@ -36,7 +36,9 @@ function Stats(){
                 </div>
             <div className="right_stat_container">
                 <Item className="time_graph_container">
+                    <div className="today_graph_container_big">
                     <TimeLineChart showByHours={false}/>
+                    </div>
                 </Item>
             </div>
 

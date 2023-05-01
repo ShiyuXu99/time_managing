@@ -8,9 +8,7 @@ import DoughnutChart from "./DoughnutChart/DoughnutChart";
 function ToodayCharts() {
     return (
         <div className="graphDiv" >
-            <div
-                className="today_graph_container_left"
-            >
+            <div className="today_graph_container_left">
                 <TimeLineChart showByHours={true}/>
             </div>
             <div className="today_graph_container_right">

@@ -10,7 +10,6 @@
     display: flex;
     padding: 10px 0;
     min-width: 400px;
-    /*flex-wrap: wrap;*/
 }
 
 .left_stat_container{
@@ -53,4 +52,23 @@
     /*flex: 1;*/
     width: 450px;
     min-height: 700px;
+    max-height: 96vh;
+    overflow: auto;
+    padding: 20px;
+    background-color: #3c4c65;
+}
+
+.time_graph_div {
+    max-height: 90vh;
+    overflow: auto;
+}
+
+.today_graph_container_big{
+    flex-direction: column;
+    padding: 20px;
+    min-width: 400px;
+    border-radius: 5px;
+    overflow: auto;
+    background-color: darkgrey;
+
 }

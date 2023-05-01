@@ -13,6 +13,7 @@
     flex: 0.35;
     min-width: 400px;
     border-radius: 5px;
+    background-color: darkgrey;
 }
 
 .today_graph_container_right{

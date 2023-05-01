@@ -55,7 +55,6 @@ function EditTaskTime({open, setOpen, editItem, todayData, taskLists, taskByDate
         })
         updateFireBaseData('todayData', newData)
         updateFireBaseData('taskDataByDate', newDataByDate)
-
         setOpen(false);
     }
 

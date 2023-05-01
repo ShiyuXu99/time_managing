@@ -6,10 +6,12 @@ import {
     DayView,
     Appointments,
 } from '@devexpress/dx-react-scheduler-material-ui';
+
 import moment from "moment";
 import {useEffect, useState} from "react";
 import {projectFirestore} from "../../../firebase/config";
 import {formatTodayGraphData} from "../../utils/calculateTodayData";
+import '../index.css'
 
 let currentDate = moment().format("YYYY-MM-DD");
 const hour = moment().hour()
@@ -42,34 +44,33 @@ export default function TimeLineChart({showByHours}) {
 
 
     return (
-        <div>
-            <Paper>
-                <Scheduler
-                    data={data}
-                    height={900}
-                >
-                    <ViewState
-                        currentDate={currentDate}
-                    />
-                    {showByHours?
-                        <DayView
-                            startDayHour={hour -2 < 0 ? 0 : hour -  2}
-                            endDayHour={hour + 2}
-                            cellDuration={15}
+        <div className="time_graph_div">
+            <Paper >
+                    <Scheduler
+                        data={data}
+                        height={'auto'}
+                    >
+                        <ViewState
+                            currentDate={currentDate}
                         />
-                        :
-                        <DayView
-                            startDayHour={0}
-                            endDayHour={24}
-                            cellDuration={30}
+                        {showByHours?
+                            <DayView
+                                startDayHour={hour -2 < 0 ? 0 : hour -  2}
+                                endDayHour={hour + 2}
+                                cellDuration={15}
+                            />
+                            :
+                            <DayView
+                                startDayHour={0}
+                                endDayHour={24}
+                                cellDuration={30}
+                            />
+                        }
+                        {/*<Appointments />*/}
+                        <Appointments
+                            appointmentComponent={Appointment}
                         />
-                    }
-                    {/*<Appointments />*/}
-                    <Appointments
-                        // appointmentComponent={Appointment}
-                        appointmentComponent={Appointment}
-                    />
-                </Scheduler>
+                    </Scheduler>
             </Paper>
         </div>
 
