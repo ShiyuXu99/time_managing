@@ -1,17 +1,17 @@
 import React, {useEffect, useState} from 'react'
-import Modal from 'react-bootstrap/Modal';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ReplayIcon from '@mui/icons-material/Replay';
 import StopIcon from '@mui/icons-material/Stop';
 import PauseIcon from '@mui/icons-material/Pause';
-import {Button, IconButton} from "@mui/material";
+import {IconButton} from "@mui/material";
 import './index.css'
 
 import { useStopwatch } from 'react-timer-hook';
-import { recordToData} from "../../../../utils/calculateTimeSpend";
 import {projectFirestore} from "../../../../firebase/config";
+import {updateTodayDataAndTaskData} from "../../../utils/calculateTimeSpend";
+import {updateFireBaseData} from "../../../utils/handleFireBase";
 
-function MyStopwatch({ setShowTimer, timerItem}) {
+function MyStopwatch({ setShowTimer, timerItem, taskByDate, todayData}) {
   let {
     seconds,
     minutes,
@@ -19,8 +19,8 @@ function MyStopwatch({ setShowTimer, timerItem}) {
     isRunning,
     start,
     pause,
+      reset,
   } = useStopwatch({ autoStart: true });
-
 
   let convertTime = (s) =>{
     if(s < 10) return `0${s}`
@@ -30,34 +30,38 @@ function MyStopwatch({ setShowTimer, timerItem}) {
   minutes = convertTime(minutes)
   hours = convertTime(hours)
 
+
     const dbData = projectFirestore.collection('adminUser');
 
-    const [taskData, setTaskData] = useState({})
-    const [taskByDate, setTaskByDate] = useState({})
+    // const [dataByToday, setDataByToday] = useState({})
+    // const [taskByDate, setTaskByDate] = useState({})
+    //
+    // useEffect(() => {
+    //     projectFirestore.collection('adminUser').doc('todayData').onSnapshot((doc) => {
+    //         setDataByToday(doc.data())
+    //     })
+    //     getFireBaseData('todayData',setDataByToday);
+    //     dbData.doc('taskDataByDate').onSnapshot((doc) => {
+    //         setTaskByDate(doc.data())
+    //     })
+    // }, [])
 
-    useEffect(() => {
-        dbData.doc('taskData').onSnapshot((doc) => {
-            setTaskData(doc.data())
-        })
-        dbData.doc('taskDataByDate').onSnapshot((doc) => {
-            setTaskByDate(doc.data())
-        })
-    }, [])
 
   let handleStop = () => {
       pause();
-      const [data, dateData] = recordToData(4, minutes, seconds, timerItem, taskData, taskByDate)
-      dbData.doc('taskData').set(data)
-      dbData.doc('taskDataByDate').set(dateData)
+      let totalSeconds = Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds)
+
+      const [dateDataUpdated, todayDataUpdated] = updateTodayDataAndTaskData(totalSeconds, timerItem, taskByDate, todayData)
+
+      updateFireBaseData('todayData', todayDataUpdated)
+      updateFireBaseData('taskDataByDate', dateDataUpdated)
 
       setShowTimer(false);
   }
 
-
     useEffect(() => {
-        if(Number(hours > 6)) handleStop()
-    }, [seconds])
-
+        if(Number(seconds > 6)) handleStop()
+    }, [hours])
 
     const toggleStartPause = () => {
       if(isRunning) pause()
@@ -107,7 +111,7 @@ function MyStopwatch({ setShowTimer, timerItem}) {
                         borderColor: "#6e8cc4"
                     }}
                     aria-label="Start"
-                    onClick={handleStop}
+                    onClick={reset}
                 >
                     <ReplayIcon sx={{
                         color: "#6e8cc4"
@@ -160,13 +164,15 @@ function MyStopwatch({ setShowTimer, timerItem}) {
   );
 }
 
-export default function CountdownPage({ setShowTimer, timerItem }) {
+export default function CountdownPage({ setShowTimer, timerItem, taskByDate, todayData }) {
 
   return (
     <div className="TimerRight">
         <MyStopwatch
             setShowTimer = {setShowTimer}
             timerItem = {timerItem}
+            taskByDate = {taskByDate}
+            todayData= {todayData}
         />
      </div>
   );

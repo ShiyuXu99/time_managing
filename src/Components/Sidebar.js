@@ -17,7 +17,6 @@ function Sidebar(){
                             id = {window.location.pathname === val.link ? "active" : ""}
                             key = {key}
                             onClick={()=>{
-                                // window.location.pathname = val.link
                                 navigate(val.link)
                             }}
                         >

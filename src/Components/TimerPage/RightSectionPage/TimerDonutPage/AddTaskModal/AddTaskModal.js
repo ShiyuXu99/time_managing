@@ -1,6 +1,6 @@
 import React from 'react'
 import {useEffect, useState} from 'react'
-import {Box, Button, MenuItem, Modal, TextField, ThemeProvider, Typography} from "@mui/material";
+import {Button, MenuItem, TextField, ThemeProvider} from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CircleIcon from '@mui/icons-material/Circle';
 import {projectFirestore} from '../../../../../firebase/config'
@@ -11,7 +11,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import {theme} from "../../../../../theme";
-import {colorList} from "../../../../../utils/colorList";
+import {colorList} from "../../../../utils/colorList";
 
 
 function AddTaskModal() {
@@ -31,10 +31,10 @@ function AddTaskModal() {
     const handleOpen = () => setOpen(true);
 
     const handleClose = () => {
-        let key = color + name;
-        if(Object.keys(data).includes(key)) setWarning(true)
+        let key = color + '(╯°□°）╯︵ ┻━┻' + name;
+        if(data && Object.keys(data).includes(key)) setWarning(true)
         else{
-            let tempData = data;
+            let tempData = data? data : {};
             tempData[key] = {
                 title: name,
                 color: color,
@@ -125,7 +125,10 @@ function AddTaskModal() {
                                         color: 'white',
                                     },
                                 }}
-                                onClick={() => setOpen(false)}>Cancel</Button>
+                                onClick={() => {
+                                    setOpen(false)
+                                    setWarning(false)
+                                }}>Cancel</Button>
                         </DialogActions>
                     </Dialog>
                 </div>

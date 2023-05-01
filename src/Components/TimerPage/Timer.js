@@ -1,17 +1,15 @@
-import React from 'react'
-import { useEffect, useState } from 'react'
+import React, {useEffect} from 'react'
+import { useState } from 'react'
 import './style.css'
-import { projectFirestore } from '../../firebase/config'
-import TimerDonutChart from './RightSectionPage/TimerDonutPage/TimerDonutChart'
+import ToodayCharts from './RightSectionPage/TimerDonutPage/ToodayCharts'
 import LeftSection from "./LeftSection/LeftSection";
 import CountdownPage from './RightSectionPage/CountdownPage/CountdownPage'
 import {
-    Paper, Select,
-    Slider,
+    Paper,
     styled
 } from "@mui/material";
-import Box, { BoxProps } from '@mui/material/Box';
-import moment from "moment";
+import Box from '@mui/material/Box';
+import {getFireBaseData} from "../utils/handleFireBase";
 
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -23,9 +21,23 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 function TimerPage() {
-    const [color, setColor] = useState(null)
     const [showTimer, setShowTimer] = useState(false)
     const [timerItem, setTimerItem] = useState()
+    const [taskLists, setTaskLists] = useState()
+    const [taskByDate, setTaskByDate] = useState({})
+    const [todayData, setTodayData] = useState({})
+
+
+
+    useEffect(() => {
+        // projectFirestore.collection('adminUser').doc('taskLists').onSnapshot((doc) => {
+        //     setData(doc.data())
+        // })
+        getFireBaseData('taskLists', setTaskLists)
+        getFireBaseData('todayData', setTodayData)
+        getFireBaseData('taskDataByDate', setTaskByDate)
+
+    }, [])
 
 
     const handleShowTimer = (item) => {
@@ -33,11 +45,6 @@ function TimerPage() {
         setShowTimer(true)
     }
 
-    useEffect(() => {
-        projectFirestore.collection('adminUser').doc('colorCode').onSnapshot((doc) => {
-            setColor(doc.data());
-        })
-    }, [])
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
@@ -49,6 +56,9 @@ function TimerPage() {
                         <LeftSection
                         handleShowTimer={handleShowTimer}
                         showTimer = {showTimer}
+                        taskLists = {taskLists}
+                        taskByDate = {taskByDate}
+                        todayData = {todayData}
                     />
                         </div>
 
@@ -58,10 +68,12 @@ function TimerPage() {
                                     <CountdownPage
                                         setShowTimer = {setShowTimer}
                                         timerItem = {timerItem}
+                                        taskByDate = {taskByDate}
+                                        todayData = {todayData}
                                     />
                                     :
                                     <div className="graphRight">
-                                    <TimerDonutChart />
+                                    <ToodayCharts />
                                     </div>
                                 }
                         </div>

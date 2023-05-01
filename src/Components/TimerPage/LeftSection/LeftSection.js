@@ -12,12 +12,15 @@ import {
 import CircleIcon from "@mui/icons-material/Circle";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite';
-
-import './index.css'
 import EditTaskTime from "./EditTaskTime";
 import {theme} from "../../../theme";
 import CustomizedSlider from "./Slider/Slider";
 import {projectFirestore} from "../../../firebase/config";
+import './index.css'
+import {getFireBaseData, updateFireBaseData} from "../../utils/handleFireBase";
+import {calculateTimeByDate, recordTodayData, updateTodayDataAndTaskData} from "../../utils/calculateTimeSpend";
+import moment from "moment";
+
 
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -27,22 +30,26 @@ const Item = styled(Paper)(({ theme }) => ({
     color: theme.palette.text.secondary,
 }));
 
-function LeftSection({ handleShowTimer, showTimer }) {
+function LeftSection({ handleShowTimer, showTimer, taskLists, taskByDate, todayData}) {
     const [open, setOpen] = useState(false);
-    const [data, setData] = useState()
     const [editItem, setEditItem] = useState()
+    const defaultSliderVal = 30;
+    const [sliderValue, setSliderValue] = useState(defaultSliderVal)
 
 
     const handleOpen = (val) => {
         setOpen(true)
-        setEditItem(data[val])
+        setEditItem(val)
     };
 
-    useEffect(() => {
-        projectFirestore.collection('adminUser').doc('taskLists').onSnapshot((doc) => {
-            setData(doc.data())
-        })
-    }, [])
+
+    const handleAddTime= (timerItem)=> {
+        const totalSeconds = sliderValue * 60;
+
+        const [dateDataUpdated, todayDataUpdated] = updateTodayDataAndTaskData(totalSeconds, timerItem, taskByDate, todayData)
+        updateFireBaseData('todayData', todayDataUpdated)
+        updateFireBaseData('taskDataByDate', dateDataUpdated)
+    }
 
 
     return (
@@ -53,12 +60,13 @@ function LeftSection({ handleShowTimer, showTimer }) {
                     <p className="header_text">Task Lists</p>
                 </div>
                 <List className="list" >
-                    {data && Object.keys(data).map((val) => (
+                    {taskLists && Object.keys(taskLists).map((val) => (
                         <ListItem key={val}>
                             <ListItemAvatar>
                                 <IconButton
                                     disabled= {showTimer}
-                                    style={showTimer? { color: 'grey' } : { color: data[val].color }}
+                                    style={{ color: taskLists[val].color }}
+                                    onClick={() => handleAddTime(val)}
                                 >
                                     <CircleIcon sx={{ fontSize: "28px" }} />
                                 </IconButton>
@@ -66,8 +74,7 @@ function LeftSection({ handleShowTimer, showTimer }) {
                             <ListItemText
                                 primaryTypographyProps={{ fontSize: '14px' }}
                                 secondaryTypographyProps={{ fontSize: '12px' }}
-                                primary={data[val].title}
-                                secondary={data[val].time}
+                                primary={taskLists[val].title}
                             />
                             <ListItemIcon>
                                 <IconButton
@@ -75,7 +82,7 @@ function LeftSection({ handleShowTimer, showTimer }) {
                                     disableFocusRipple
                                     disableRipple
                                     disabled= {showTimer}
-                                    style={showTimer?  { color: 'grey', marginRight: '1.5px'}: { color: data[val].color, marginRight: '1.5px' }}
+                                    style={showTimer?  { color: 'grey', marginRight: '1.5px'}: { color: taskLists[val].color, marginRight: '1.5px' }}
                                     onClick={() => handleOpen(val)}
                                 >
                                     <DriveFileRenameOutlineIcon sx={{ fontSize: "18px" }} />
@@ -83,7 +90,7 @@ function LeftSection({ handleShowTimer, showTimer }) {
 
                                 <IconButton edge="end"
                                     disabled= {showTimer}
-                                    style={showTimer? { color: 'grey' } : { color: data[val].color }}
+                                    style={showTimer? { color: 'grey' } : { color: taskLists[val].color }}
                                     onClick={() => handleShowTimer(val)}
                                 >
                                     <PlayCircleFilledWhiteIcon sx={{ fontSize: "30px" }} />
@@ -102,8 +109,9 @@ function LeftSection({ handleShowTimer, showTimer }) {
 
                     <div className="sliderBox">
                         <ThemeProvider theme={theme}>
-
                         <CustomizedSlider
+                            setSliderValue = {setSliderValue}
+                            defaultValue = {defaultSliderVal}
                         />
                         </ThemeProvider>
                     </div>
@@ -114,6 +122,9 @@ function LeftSection({ handleShowTimer, showTimer }) {
                 open={open}
                 setOpen={setOpen}
                 editItem={editItem}
+                todayData={todayData}
+                taskLists={taskLists}
+                taskByDate={taskByDate}
             />}
 
         </div>

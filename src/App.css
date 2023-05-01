@@ -119,11 +119,6 @@ body {
 
 
 
-@media only screen and (max-width: 800px) {
-    .leftBlock {
-        min-width: 300px;
-    }
-}
 
 
 

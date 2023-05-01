@@ -3,8 +3,8 @@ import {
     Paper,
     styled
 } from "@mui/material";
-import Box from '@mui/material/Box';
 import './index.css'
+import TimeLineChart from "./TimeLineChart/TimeLineChart";
 
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -36,7 +36,7 @@ function Stats(){
                 </div>
             <div className="right_stat_container">
                 <Item className="time_graph_container">
-
+                    <TimeLineChart showByHours={false}/>
                 </Item>
             </div>
 

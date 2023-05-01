@@ -1,21 +1,26 @@
 import React from 'react'
 import {useEffect, useState} from 'react'
-import {Button, Input, InputAdornment, MenuItem, Modal, TextField, ThemeProvider, Typography} from "@mui/material";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
+import {Button, MenuItem, TextField, ThemeProvider} from "@mui/material";
 import CircleIcon from '@mui/icons-material/Circle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import './index.css'
-import {projectFirestore} from "../../../../firebase/config";
 import {theme} from "../../../../theme";
+import EditTaskItem from "./EditTaskItem";
+import {getTitleAndColor} from "../../../utils/generalCalculation";
+import {updateFireBaseData} from "../../../utils/handleFireBase";
+import moment from "moment";
 
 
-function EditTaskTime({open, setOpen, editItem}) {
+function EditTaskTime({open, setOpen, editItem, todayData, taskLists, taskByDate}) {
+    const [originalColor, originalName] = getTitleAndColor(editItem)
     const [color, setColor] = useState('');
     const [name, setName] = useState('');
-    const [data, setData] = useState({});
+
+    const itemData = todayData && todayData[editItem]
+    const [recordChange, setRecordChange] = useState([])
 
     const colorList = [
         {
@@ -30,22 +35,21 @@ function EditTaskTime({open, setOpen, editItem}) {
 
     ];
 
-    useEffect(() => {
-        projectFirestore.collection('adminUser').doc('taskDatas').onSnapshot((doc) => {
-            setData(doc.data())
-        })
-    }, [])
-
-
     const handleClose = () => {
-        projectFirestore.collection("adminUser").doc("taskDatas").set({
-            ...data,
-            [name]: {
-                name: name,
-                color: color,
-                time: 0
-            }
+        let newData = todayData;
+        let newDataByDate = taskByDate;
+        const currentDate = moment().format("MM/DD/YYYY");
+
+        recordChange.forEach(([originalSeconds, value], index) => {
+            let endTime = moment(itemData[index]['endTime'])
+            let newStartTime = endTime.subtract(value, 'second')
+
+            newData[editItem][index]['startTime'] = newStartTime.format('YYYY-MM-DDTHH:mm:ss.sssZ')
+            newDataByDate[currentDate][editItem] = taskByDate[currentDate][editItem] - originalSeconds + value;
         })
+        updateFireBaseData('todayData', newData)
+        updateFireBaseData('taskDataByDate', newDataByDate)
+
         setOpen(false);
     }
 
@@ -54,7 +58,7 @@ function EditTaskTime({open, setOpen, editItem}) {
             <ThemeProvider theme={theme}>
                 <div>
                     <Dialog
-                        PaperProps={{sx: { height: '380px', width: '570px'}}}
+                        PaperProps={{sx: { minHeight: '250px', width: '570px'}}}
                         open={open} onClose={handleClose}>
                         <DialogTitle>Edit Task</DialogTitle>
                         <DialogContent>
@@ -64,7 +68,7 @@ function EditTaskTime({open, setOpen, editItem}) {
                                         id="outlined-select-currency"
                                         select
                                         label="Select"
-                                        value={editItem.color}
+                                        value={originalColor}
                                         helperText="Task color"
                                         style={{width: 70}}
                                         onChange={(event) => {
@@ -88,7 +92,7 @@ function EditTaskTime({open, setOpen, editItem}) {
                                 <TextField
                                     className="text_input"
                                     label="task name"
-                                    defaultValue={editItem.title}
+                                    defaultValue={originalName}
                                     helperText="Name for task"
                                     color='primary'
                                     variant="standard"
@@ -97,41 +101,20 @@ function EditTaskTime({open, setOpen, editItem}) {
                                     }}
                                 />
                             </div>
-
-                            <div>
-                                <h3>Edit Time Spend</h3>
-                            </div>
-                            <div className="initialize_inputs">
-                                <div className="color_input">
-
-
-                                    <TextField
-                                        id="outlined-number"
-                                        label="Hours"
-                                        type="number"
-                                        style={{width: 70}}
-                                        defaultValue='1'
-
-                                        InputLabelProps={{
-                                            shrink: true,
-                                        }}
-                                    />
-                                </div>
-
-
-                                <TextField
-                                    id="outlined-number"
-                                    label="Minutes"
-                                    type="number"
-                                    style={{width: 120}}
-                                    defaultValue='1'
-
-                                    InputLabelProps={{
-                                        shrink: true,
-                                    }}
-                                />
-                            </div>
-
+                            {
+                                itemData && itemData.map((itemElement, index) =>{
+                                    return(
+                                        <EditTaskItem
+                                            key={index}
+                                            editItem={editItem}
+                                            recordChange={recordChange}
+                                            setRecordChange={setRecordChange}
+                                            itemElement={itemElement}
+                                            index={index}
+                                        />
+                                        )
+                                })
+                            }
 
                         </DialogContent>
                         <DialogActions>
@@ -145,7 +128,7 @@ function EditTaskTime({open, setOpen, editItem}) {
                                     },
                                 }}
                             >
-                                Add
+                                Save
                             </Button>
                             <Button
                                 variant="outlined"

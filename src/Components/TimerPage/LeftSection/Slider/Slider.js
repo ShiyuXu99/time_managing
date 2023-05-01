@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import Slider, { SliderThumb, SliderValueLabelProps } from '@mui/material/Slider';
+import Slider from '@mui/material/Slider';
 import { styled } from '@mui/material/styles';
 
 const marks = [
@@ -40,7 +40,7 @@ const PrettoSlider = styled(Slider)({
         width: 32,
         height: 32,
         borderRadius: '50% 50% 50% 0',
-        backgroundColor: '#52af77',
+        backgroundColor: '#3c4c65',
         transformOrigin: 'bottom left',
         transform: 'translate(50%, -100%) rotate(-45deg) scale(0)',
         '&:before': { display: 'none' },
@@ -54,15 +54,19 @@ const PrettoSlider = styled(Slider)({
 });
 
 
-export default function CustomizedSlider() {
+export default function CustomizedSlider({defaultValue, setSliderValue}) {
+    const handleValue = (e) => {
+        setSliderValue(e.target.value)
+    }
     return (
             <PrettoSlider
                 aria-label="Custom marks"
-                defaultValue={30}
+                defaultValue={defaultValue}
                 step={5}
                 valueLabelDisplay="auto"
                 marks={marks}
                 min={20} max={70}
+                onChange={handleValue}
             />
     );
 }
