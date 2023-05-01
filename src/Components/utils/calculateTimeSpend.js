@@ -51,9 +51,9 @@ export const recordTodayData = (endTime, startTime, totalSeconds, timerItem, tod
     let data = {}
 
     if(!isToday(startTime)){
-        let startTime = TODAY.startOf('day')
+        let newStartTime = TODAY.startOf('day')
         todayData = {}
-        data = addDataToday(todayData, startTime, endTime, date, timerItem)
+        data = addDataToday(todayData, newStartTime, endTime, date, timerItem)
     }
     else{
         data = addDataToday(todayData, startTime, endTime, date, timerItem)

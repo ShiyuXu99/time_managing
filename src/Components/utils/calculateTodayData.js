@@ -19,6 +19,7 @@ export const formatTodayGraphData = (data) => {
         })
     })
 
+
     return dataToday;
 }
 

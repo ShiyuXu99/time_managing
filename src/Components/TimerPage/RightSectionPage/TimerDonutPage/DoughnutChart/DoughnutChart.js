@@ -2,7 +2,7 @@ import {Doughnut} from 'react-chartjs-2';
 import React, {useEffect, useState} from "react";
 
 import {Chart as ChartJS, ArcElement, Tooltip, Legend} from 'chart.js';
-import {getTodayDoughnutData, getTotalNum} from "../../../../utils/calculateTodayData";
+import {getTodayDoughnutData} from "../../../../utils/calculateTodayData";
 import {getFireBaseData} from "../../../../utils/handleFireBase";
 import {formatSecondsToHourMinute} from "../../../../utils/generalCalculation";
 

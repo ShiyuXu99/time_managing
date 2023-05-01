@@ -53,8 +53,8 @@ function MyStopwatch({ setShowTimer, timerItem, taskByDate, todayData}) {
 
       const [dateDataUpdated, todayDataUpdated] = updateTodayDataAndTaskData(totalSeconds, timerItem, taskByDate, todayData)
 
-      updateFireBaseData('todayData', todayDataUpdated)
       updateFireBaseData('taskDataByDate', dateDataUpdated)
+      updateFireBaseData('todayData', todayDataUpdated)
 
       setShowTimer(false);
   }

@@ -11,9 +11,8 @@ import {useEffect, useState} from "react";
 import {projectFirestore} from "../../../firebase/config";
 import {formatTodayGraphData} from "../../utils/calculateTodayData";
 
-const currentDate = moment().format("YYYY-MM-DD");
+let currentDate = moment().format("YYYY-MM-DD");
 const hour = moment().hour()
-
 
 export default function TimeLineChart({showByHours}) {
     const [data, setData] = useState()
@@ -23,7 +22,9 @@ export default function TimeLineChart({showByHours}) {
             const dataToday = formatTodayGraphData(doc.data())
             setData(dataToday)
         })
+
     }, [])
+
 
     const Appointment = ({ children, style, data, ...restProps }) => (
         <Appointments.Appointment
@@ -52,7 +53,7 @@ export default function TimeLineChart({showByHours}) {
                     />
                     {showByHours?
                         <DayView
-                            startDayHour={hour - 2}
+                            startDayHour={hour -2 < 0 ? 0 : hour -  2}
                             endDayHour={hour + 2}
                             cellDuration={15}
                         />

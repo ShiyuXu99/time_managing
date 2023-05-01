@@ -42,7 +42,13 @@ function EditTaskTime({open, setOpen, editItem, todayData, taskLists, taskByDate
 
         recordChange.forEach(([originalSeconds, value], index) => {
             let endTime = moment(itemData[index]['endTime'])
-            let newStartTime = endTime.subtract(value, 'second')
+            let newStartTime = endTime.clone().subtract(value, 'second')
+
+
+            if(!endTime.isSame(newStartTime, 'd')){
+                newStartTime = endTime.clone().startOf('day')
+                value = moment(endTime).diff(moment(endTime.clone().startOf('day')), 'second')
+            }
 
             newData[editItem][index]['startTime'] = newStartTime.format('YYYY-MM-DDTHH:mm:ss.sssZ')
             newDataByDate[currentDate][editItem] = taskByDate[currentDate][editItem] - originalSeconds + value;

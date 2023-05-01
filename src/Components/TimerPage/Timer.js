@@ -30,9 +30,6 @@ function TimerPage() {
 
 
     useEffect(() => {
-        // projectFirestore.collection('adminUser').doc('taskLists').onSnapshot((doc) => {
-        //     setData(doc.data())
-        // })
         getFireBaseData('taskLists', setTaskLists)
         getFireBaseData('todayData', setTodayData)
         getFireBaseData('taskDataByDate', setTaskByDate)

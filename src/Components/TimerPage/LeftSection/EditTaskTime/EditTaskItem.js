@@ -13,7 +13,7 @@ function EditTaskItem({editItem, itemElement, setRecordChange, recordChange, ind
 
     const [originalColor, originalName] = getTitleAndColor(editItem)
     const seconds = moment(endTime).diff(moment(itemElement['startTime']), 'second')
-    const [hour, min] = formatSecondsToHourMinute(seconds)
+    const min = Math.floor(seconds/60)
 
 
 
