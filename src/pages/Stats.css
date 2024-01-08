@@ -65,10 +65,10 @@
 
 .today_graph_container_big{
     flex-direction: column;
-    padding: 20px;
+    padding: 10px;
     min-width: 400px;
     border-radius: 5px;
     overflow: auto;
-    background-color: darkgrey;
+    background-color: #828b9c;
 
 }

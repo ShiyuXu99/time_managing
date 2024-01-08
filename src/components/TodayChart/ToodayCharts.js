@@ -1,8 +1,8 @@
 import './index.css'
 import React from "react";
-import AddTaskModal from "./AddTaskModal/AddTaskModal";
-import TimeLineChart from "../../../StatesData/TimeLineChart/TimeLineChart";
-import DoughnutChart from "./DoughnutChart/DoughnutChart";
+import AddTaskModal from "../AddTaskModal/AddTaskModal";
+import TimeLineChart from "../StatesData/TimeLineChart/TimeLineChart";
+import DoughnutChart from "../DoughnutChart";
 
 
 function ToodayCharts() {

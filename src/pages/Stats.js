@@ -3,8 +3,8 @@ import {
     Paper,
     styled
 } from "@mui/material";
-import './index.css'
-import TimeLineChart from "./TimeLineChart/TimeLineChart";
+import './Stats.css'
+import TimeLineChart from "../components/StatesData/TimeLineChart/TimeLineChart";
 
 
 const Item = styled(Paper)(({ theme }) => ({

@@ -1,7 +1,7 @@
 import './App.css';
 import Sidebar from "./components/Sidebar";
-import Timer from './components/TimerPage/Timer'
-import Stats from "./components/StatesData/Stats";
+import Timer from './pages/Timer'
+import Stats from "./pages/Stats";
 import {
     Routes,
     Route,
@@ -13,7 +13,6 @@ import React from 'react';
 function App() {
   return (
     <div className="App">
-
         <Sidebar/>
         <div className="mainContents">
                 <Routes>

@@ -11,7 +11,7 @@ import moment from "moment";
 import {useEffect, useState} from "react";
 import {projectFirestore} from "../../../firebase/config";
 import {formatTodayGraphData} from "../../utils/calculateTodayData";
-import '../index.css'
+import '../../../pages/Stats.css'
 
 let currentDate = moment().format("YYYY-MM-DD");
 const hour = moment().hour()
@@ -26,7 +26,6 @@ export default function TimeLineChart({showByHours}) {
         })
 
     }, [])
-
 
     const Appointment = ({ children, style, data, ...restProps }) => (
         <Appointments.Appointment

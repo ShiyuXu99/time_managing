@@ -1,39 +1,50 @@
 import moment from 'moment'
 let TODAY;
+let recordOnSameDay;
 
 
-const addInDataByDate = (taskByDate, date, timerItem, totalSeconds) =>{
+const addInDataByDate = (startTime, endTime, taskByDate, date, timerItem, totalSeconds) =>{
+
     //if there's no date for today, initialize to {}
-    if(!taskByDate[date]){
-        taskByDate[date] = {}
-        taskByDate[date][timerItem] = 0
-    }
-    //if there is date for today, check the data
-    //today's data, might have timerItem, might not
+    let yesterday = TODAY.subtract(1, 'days').format('L');
+    taskByDate = taskByDate || {};
+
+    taskByDate[date] = taskByDate[date] || {};
+    taskByDate[date][timerItem] = taskByDate[date][timerItem] || { totalTime: 0, detailRecords: [] };
+    
+
+    //Pull out the itemData record
     let todayData = taskByDate[date]
-    //if doesn't have timer Item
-    if(!todayData[timerItem]) todayData[timerItem] = 0
-    todayData[timerItem] += totalSeconds
+    if(recordOnSameDay){
+        pushNewTimeRecord(todayData, startTime, endTime, totalSeconds, timerItem)
+    }
+    else{
+        //initialize data for yesterday if no records
+        taskByDate[yesterday] = taskByDate[yesterday] || {};
+        taskByDate[yesterday][timerItem] = taskByDate[yesterday][timerItem] || { totalTime: 0, detailRecords: [] };
+
+        let yesterdayData = taskByDate[yesterday]
+        let [yesterdayRecord, todayRecord] = getTimeRanges(startTime, endTime);
+        pushNewTimeRecord(todayData, todayRecord?.start, todayRecord?.end, todayRecord?.totalSeconds, timerItem)
+        pushNewTimeRecord(yesterdayData, yesterdayRecord?.start, yesterdayRecord?.end, yesterdayRecord?.totalSeconds, timerItem)
+
+    }
 
     return taskByDate
 }
 
-export const calculateTimeByDate = (endTime, startTime, totalSeconds, timerItem, taskByDate) => {
+const pushNewTimeRecord = (data, startTime, endTime, totalSeconds, timerItem) => {
+    console.log(totalSeconds)
+    data[timerItem].totalTime = data[timerItem].totalTime + totalSeconds;
+    data[timerItem].detailRecords.push({startTime: startTime.format('YYYY-MM-DDTHH:mm:ss.sssZ'), endTime: endTime.format('YYYY-MM-DDTHH:mm:ss.sssZ')})
+}
+
+
+export const calculateTimeByDate = (startTime, endTime, totalSeconds, timerItem, taskByDate) => {
     TODAY = endTime.clone();
     let date = endTime.clone().format('L')
-    let data = {}
-
-    if(isToday(startTime)){
-        data = addInDataByDate(taskByDate, date, timerItem, totalSeconds)
-    }
-    else{
-        let workTimeToday = Math.round(moment.duration(endTime.diff(TODAY.startOf('day'))).asSeconds())
-        let workTimeYesterday = totalSeconds - workTimeToday
-
-        let yesterday = TODAY.subtract(1, 'days').format('L')
-        data = addInDataByDate(taskByDate, date, timerItem, workTimeToday)
-        data = addInDataByDate(data, yesterday, timerItem, workTimeYesterday)
-    }
+    let data = addInDataByDate(startTime, endTime, taskByDate, date, timerItem, totalSeconds)
+    console.log(data, "logging data")
 
     return data;
 }
@@ -71,8 +82,31 @@ export const updateTodayDataAndTaskData = (totalSeconds, timerItem, taskByDate,d
     const endTime = moment()
     let startTime = endTime.clone().subtract(totalSeconds, 'second')
 
+    recordOnSameDay = areSameDay(startTime, endTime)
+
     const dateData =  calculateTimeByDate(endTime, startTime, totalSeconds, timerItem, taskByDate)
     const todayData = recordTodayData(endTime, startTime, totalSeconds, timerItem, dataByToday)
 
     return [dateData, todayData]
+}
+
+
+
+function areSameDay(time1, time2) {
+    return time1.isSame(time2, 'day');
+}
+
+function getTimeRanges(startTime, endTime) {
+    // Times span across two different days
+    const endOfStartDay = startTime.clone().endOf('day');
+    const startOfEndDay = endTime.clone().startOf('day');
+
+    // Calculate the total seconds for each range
+    const totalSecondsFirstRange = endOfStartDay.diff(startTime, 'seconds');
+    const totalSecondsSecondRange = endTime.diff(startOfEndDay, 'seconds');
+
+    return [
+        { start: startTime, end: endOfStartDay, totalSeconds: totalSecondsFirstRange },
+        { start: startOfEndDay, end: endTime, totalSeconds: totalSecondsSecondRange }
+    ];
 }

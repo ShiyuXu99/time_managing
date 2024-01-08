@@ -13,9 +13,12 @@ body {
 .Sidebar {
     height: 100%;
     width: 220px;
-    padding-top: 30vh;;
+    padding-top: 35vh;;
     border-right: lightgray 1px solid;
     position: fixed;
+    display: flex;
+    /*align-items: center;*/
+    /*justify-content: center;*/
     /*z-index: 1;*/
 }
 

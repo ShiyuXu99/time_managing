@@ -3,16 +3,15 @@ import {useEffect, useState} from 'react'
 import {Button, MenuItem, TextField, ThemeProvider} from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CircleIcon from '@mui/icons-material/Circle';
-import {projectFirestore} from '../../../../../firebase/config'
 import './index.css'
 
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import {theme} from "../../../../../theme";
-import {colorList} from "../../../../utils/colorList";
-
+import {theme} from "../../theme";
+import {colorList} from "../utils/colorList";
+import {projectFirestore} from "../../firebase/config"
 
 function AddTaskModal() {
     const [open, setOpen] = useState(false);

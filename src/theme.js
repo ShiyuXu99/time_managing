@@ -17,5 +17,6 @@ export const theme = createTheme({
     slider: {
         trackColor: "yellow",
         selectionColor: "red"
-    }
+    },
+
 });

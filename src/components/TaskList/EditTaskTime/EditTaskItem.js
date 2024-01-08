@@ -3,7 +3,7 @@ import React, {useState} from 'react'
 
 import './index.css'
 import {TextField} from "@mui/material";
-import {formatSecondsToHourMinute, getTitleAndColor} from "../../../utils/generalCalculation";
+import {formatSecondsToHourMinute, getTitleAndColor} from "../../utils/generalCalculation";
 import moment from "moment";
 import CircleIcon from '@mui/icons-material/Circle';
 
@@ -37,20 +37,6 @@ function EditTaskItem({editItem, itemElement, setRecordChange, recordChange, ind
         </div>
 
             </div>
-            {/*<div className="task_edit_element">*/}
-            {/*    <TextField*/}
-            {/*        id="outlined-number"*/}
-            {/*        label="Hours"*/}
-            {/*        type="number"*/}
-            {/*        style={{width: 70}}*/}
-            {/*        defaultValue={hour}*/}
-            {/*        variant="standard"*/}
-            {/*        InputLabelProps={{*/}
-            {/*            shrink: true,*/}
-            {/*        }}*/}
-            {/*    />*/}
-            {/*</div>*/}
-
             <div className="task_edit_element">
                 <TextField
                     id="outlined-number"

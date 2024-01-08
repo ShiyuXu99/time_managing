@@ -15,6 +15,7 @@ const marks = [
 ];
 
 const PrettoSlider = styled(Slider)({
+    width: "80%",
     color: '#6e8cc4',
     height: 5,
     '& .MuiSlider-track': {
@@ -33,12 +34,12 @@ const PrettoSlider = styled(Slider)({
         },
     },
     '& .MuiSlider-valueLabel': {
-        lineHeight: 1.2,
-        fontSize: 12,
+        lineHeight: 1,
+        fontSize: 11,
         background: 'unset',
         padding: 0,
-        width: 32,
-        height: 32,
+        width: 28,
+        height: 28,
         borderRadius: '50% 50% 50% 0',
         backgroundColor: '#3c4c65',
         transformOrigin: 'bottom left',

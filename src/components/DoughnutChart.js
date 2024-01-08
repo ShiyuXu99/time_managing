@@ -2,9 +2,9 @@ import {Doughnut} from 'react-chartjs-2';
 import React, {useEffect, useState} from "react";
 
 import {Chart as ChartJS, ArcElement, Tooltip, Legend} from 'chart.js';
-import {getTodayDoughnutData} from "../../../../utils/calculateTodayData";
-import {getFireBaseData} from "../../../../utils/handleFireBase";
-import {formatSecondsToHourMinute} from "../../../../utils/generalCalculation";
+import {getTodayDoughnutData} from "./utils/calculateTodayData";
+import {getFireBaseData} from "./utils/handleFireBase";
+import {formatSecondsToHourMinute} from "./utils/generalCalculation";
 
 function DoughnutChart() {
     const [data, setData] = useState()
@@ -45,7 +45,10 @@ function DoughnutChart() {
                 let color = chart.config.data.datasets[chart._active[0].datasetIndex].backgroundColor[chart._active[0].index]
                 ctx.fillStyle = `${color}`
 
-                ctx.fillText(`${labelName}: ${valueNum}`, xPos, yPos)
+                const [hour, min] = formatSecondsToHourMinute(valueNum * 60)
+
+
+                ctx.fillText(`${labelName}: ${hour}h ${min} Min`, xPos, yPos)
             }
             else{
                 const sumWithInitial = chart.config.data.datasets[0]['data'].reduce(

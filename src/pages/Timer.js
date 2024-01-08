@@ -1,15 +1,15 @@
 import React, {useEffect} from 'react'
 import { useState } from 'react'
-import './style.css'
-import ToodayCharts from './RightSectionPage/TimerDonutPage/ToodayCharts'
-import LeftSection from "./LeftSection/LeftSection";
-import CountdownPage from './RightSectionPage/CountdownPage/CountdownPage'
+import './Timer.css'
+import ToodayCharts from '../components/TodayChart/ToodayCharts'
+import TaskList from "../components/TaskList/TaskList";
+import CountdownPage from './CountdownPage'
 import {
     Paper,
     styled
 } from "@mui/material";
 import Box from '@mui/material/Box';
-import {getFireBaseData} from "../utils/handleFireBase";
+import {getFireBaseData} from "../components/utils/handleFireBase";
 
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -46,11 +46,9 @@ function TimerPage() {
     return (
         <div style={{ width: '100%', height: '100%' }}>
         <Box className="box">
-                <Box
-                    sx={{ display: 'flex', flexWrap: 'wrap' }}
-                >
+                <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
                     <div className="leftBlock">
-                        <LeftSection
+                        <TaskList
                         handleShowTimer={handleShowTimer}
                         showTimer = {showTimer}
                         taskLists = {taskLists}

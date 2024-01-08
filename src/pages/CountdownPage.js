@@ -7,9 +7,10 @@ import {IconButton} from "@mui/material";
 import './index.css'
 
 import { useStopwatch } from 'react-timer-hook';
-import {projectFirestore} from "../../../../firebase/config";
-import {updateTodayDataAndTaskData} from "../../../utils/calculateTimeSpend";
-import {updateFireBaseData} from "../../../utils/handleFireBase";
+import {projectFirestore} from "../firebase/config";
+import {updateTodayDataAndTaskData} from "../components/utils/calculateTimeSpend";
+import {updateFireBaseData} from "../components/utils/handleFireBase";
+import CircleIcon from "@mui/icons-material/Circle";
 
 function MyStopwatch({ setShowTimer, timerItem, taskByDate, todayData}) {
   let {
@@ -30,32 +31,12 @@ function MyStopwatch({ setShowTimer, timerItem, taskByDate, todayData}) {
   minutes = convertTime(minutes)
   hours = convertTime(hours)
 
-
-    const dbData = projectFirestore.collection('adminUser');
-
-    // const [dataByToday, setDataByToday] = useState({})
-    // const [taskByDate, setTaskByDate] = useState({})
-    //
-    // useEffect(() => {
-    //     projectFirestore.collection('adminUser').doc('todayData').onSnapshot((doc) => {
-    //         setDataByToday(doc.data())
-    //     })
-    //     getFireBaseData('todayData',setDataByToday);
-    //     dbData.doc('taskDataByDate').onSnapshot((doc) => {
-    //         setTaskByDate(doc.data())
-    //     })
-    // }, [])
-
-
   let handleStop = () => {
       pause();
       let totalSeconds = Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds)
-
       const [dateDataUpdated, todayDataUpdated] = updateTodayDataAndTaskData(totalSeconds, timerItem, taskByDate, todayData)
-
       updateFireBaseData('taskDataByDate', dateDataUpdated)
       updateFireBaseData('todayData', todayDataUpdated)
-
       setShowTimer(false);
   }
 
@@ -68,39 +49,30 @@ function MyStopwatch({ setShowTimer, timerItem, taskByDate, todayData}) {
       else start()
   }
 
+  const timeMap = ['Hours', 'Minutes', 'Seconds']
+    const time = [hours, minutes, seconds]
+
   return (
     <div className="countdownDiv">
-      <div className="displayTime">
-          <div className="displayHourOuter">
-              <span className="counterLabel">
-                  Hours
-              </span>
-              <div className="displayHour">
-                  <span>{`${hours}:`}</span>
-              </div>
-          </div>
-
-          <div className="displayHourOuter">
-              <span className="counterLabel">
-                  Minutes
-              </span>
-              <div className="displayHour">
-                  <span>{`${minutes}:`}</span>
-              </div>
-          </div>
-
-          <div className="displayHourOuter">
-              <span className="counterLabel">
-                  Seconds
-              </span>
-              <div className="displayHour">
-                  <span>{`${seconds}`}</span>
-              </div>
-          </div>
+        <div>
+            <CircleIcon sx={{ fontSize: "28px" }} />
+        </div>
+        <div className="displayTime">
+        {timeMap.map((val, index) => {
+            return (
+                    <div className="displayHourOuter">
+                          <span className="counterLabel">
+                              {val}
+                          </span>
+                        <div className="displayHour">
+                            <span>{val === 'Seconds' ? `${time[index]}` : `${time[index]}:`}</span>
+                        </div>
+                    </div>
+            )
+        })}
       </div>
       {/*<p>{isRunning ? 'Running' : 'Not running'}</p>*/}
         <div className="iconClass">
-
             <div>
                 <IconButton
                     sx={{
@@ -137,7 +109,6 @@ function MyStopwatch({ setShowTimer, timerItem, taskByDate, todayData}) {
                         color: "#6e8cc4"
                     }} />
                     }
-
                 </IconButton>
             </div>
 

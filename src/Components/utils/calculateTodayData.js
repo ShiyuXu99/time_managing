@@ -27,7 +27,6 @@ export const formatTodayGraphData = (data) => {
 export const getTodayDoughnutData = (data) => {
     let doughnutData = []
     let todayDate = moment().format('MM/DD/YYYY')
-    // data = data? data: {}
     let todayData = data[todayDate]
 
     let keys = todayData && Object.keys(todayData)
@@ -36,7 +35,7 @@ export const getTodayDoughnutData = (data) => {
         const [color, title] = getTitleAndColor(key)
         labelList.push(title)
         backgroundColorList.push(color)
-        dataNum.push(Math.floor(todayData[key]/60))
+        dataNum.push(Math.floor(todayData[key].totalTime/60))
     })
 
     doughnutData = {

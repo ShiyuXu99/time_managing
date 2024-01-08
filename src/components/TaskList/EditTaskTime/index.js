@@ -7,10 +7,10 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import './index.css'
-import {theme} from "../../../../theme";
+import {theme} from "../../../theme";
 import EditTaskItem from "./EditTaskItem";
-import {getTitleAndColor} from "../../../utils/generalCalculation";
-import {updateFireBaseData} from "../../../utils/handleFireBase";
+import {getTitleAndColor} from "../../utils/generalCalculation";
+import {updateFireBaseData} from "../../utils/handleFireBase";
 import moment from "moment";
 
 
@@ -91,7 +91,6 @@ function EditTaskTime({open, setOpen, editItem, todayData, taskLists, taskByDate
                                             </MenuItem>
                                         ))}
                                     </TextField>
-
                                 </div>
 
                                 <TextField
