@@ -1,0 +1,30 @@
+
+.modalContainer {
+    width: 800px;
+    height: 200px;
+}
+
+.model-form-item {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.AddTaskTitle {
+    padding: 20px 50px;
+    border-radius: 10px;
+}
+
+
+.text_input {
+    width: 400px;
+}
+
+.initialize_inputs {
+    padding: 10px;
+    width: 97%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 20px;
+}
+
