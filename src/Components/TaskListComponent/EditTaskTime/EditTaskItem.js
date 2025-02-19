@@ -3,7 +3,7 @@ import React, {useState} from 'react'
 
 import './index.css'
 import {TextField} from "@mui/material";
-import {formatSecondsToHourMinute, getTitleAndColor} from "../../../../utils/generalCalculation";
+import {formatSecondsToHourMinute, getTitleAndColor} from "../../../utils/generalCalculation";
 import moment from "moment";
 import CircleIcon from '@mui/icons-material/Circle';
 
@@ -14,8 +14,6 @@ function EditTaskItem({editItem, itemElement, setRecordChange, recordChange, ind
     const [originalColor, originalName] = getTitleAndColor(editItem)
     const seconds = moment(endTime).diff(moment(itemElement['startTime']), 'second')
     const min = Math.floor(seconds/60)
-
-
 
     const handleMinUpdate = (event) =>{
         let temp = recordChange

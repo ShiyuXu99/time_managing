@@ -1,15 +1,15 @@
 import React, {useEffect} from 'react'
 import { useState } from 'react'
-import './Timer.css'
-import ToodayCharts from '../components/TodayChart/ToodayCharts'
-import TaskList from "../components/TaskList/TaskList";
+import './MainPage.css'
+import ToodayCharts from '../Components/HourlyChartComponent'
 import CountdownPage from './CountdownPage'
 import {
     Paper,
     styled
 } from "@mui/material";
 import Box from '@mui/material/Box';
-import {getFireBaseData} from "../components/utils/handleFireBase";
+import { getFireBaseData } from "../utils/handleFireBase";
+import TaskList from '../Components/TaskListComponent'
 
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -20,28 +20,27 @@ const Item = styled(Paper)(({ theme }) => ({
     color: theme.palette.text.secondary,
 }));
 
-function TimerPage() {
+function MainPage() {
     const [showTimer, setShowTimer] = useState(false)
     const [timerItem, setTimerItem] = useState()
-    const [taskLists, setTaskLists] = useState()
     const [taskByDate, setTaskByDate] = useState({})
     const [todayData, setTodayData] = useState({})
 
 
-
     useEffect(() => {
-        getFireBaseData('taskLists', setTaskLists)
-        getFireBaseData('todayData', setTodayData)
-        getFireBaseData('taskDataByDate', setTaskByDate)
+        const fetchData = async () => {
+            // await getFirebaseCollection('taskLists', 'tasks', setTaskLists);
+            await getFireBaseData('todayData', setTodayData);
+            await getFireBaseData('taskDataByDate', setTaskByDate);
+        };
 
+        fetchData();
     }, [])
-
 
     const handleShowTimer = (item) => {
         setTimerItem(item)
         setShowTimer(true)
     }
-
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
@@ -51,7 +50,6 @@ function TimerPage() {
                         <TaskList
                         handleShowTimer={handleShowTimer}
                         showTimer = {showTimer}
-                        taskLists = {taskLists}
                         taskByDate = {taskByDate}
                         todayData = {todayData}
                     />
@@ -80,4 +78,4 @@ function TimerPage() {
     )
 }
 
-export default TimerPage
+export default MainPage

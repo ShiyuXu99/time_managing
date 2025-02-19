@@ -1,55 +1,46 @@
-import React from 'react'
-import {useEffect, useState} from 'react'
-import {Button, MenuItem, TextField, ThemeProvider} from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CircleIcon from '@mui/icons-material/Circle';
-import './index.css'
+import { Button, MenuItem, TextField } from "@mui/material";
+import React, { useState } from 'react';
+import './index.css';
 
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import {theme} from "../../../theme";
-import {colorList} from "../../../utils/colorList";
-import {projectFirestore} from "../../../firebase/config"
+import useStore from "../../store/store";
+import { colorList } from "../../utils/colorList";
 
 function AddTaskModal() {
     const [open, setOpen] = useState(false);
     const [color, setColor] = useState('');
     const [name, setName] = useState('');
     const [data, setData] = useState({});
-
     const [warning, setWarning] = useState(false);
+    const [warningMessage, setWarningMessage] = useState('')
+    const addToTaskLists = useStore(state => state.addToTaskLists);
 
-    useEffect(() => {
-        projectFirestore.collection('adminUser').doc('taskLists').onSnapshot((doc) => {
-            setData(doc.data())
-        })
-    }, [])
 
     const handleOpen = () => setOpen(true);
 
-    const handleClose = () => {
-        let key = color + '(╯°□°）╯︵ ┻━┻' + name;
-        if(data && Object.keys(data).includes(key)) setWarning(true)
-        else{
-            let tempData = data? data : {};
-            tempData[key] = {
-                title: name,
-                color: color,
-                time: 0
-            }
-            projectFirestore.collection("adminUser").doc("taskLists").set(tempData)
-            setWarning(false)
-            setOpen(false);
+    const handleClose = async () => {
+        if (!color || !name) {
+            setWarningMessage('Fields can not be empty')
+            setWarning(true);
+            return;
         }
-
-    }
+        const result = await addToTaskLists(name, color);
+        if(!result?.success){
+            setWarningMessage(result?.message)
+            setWarning(true);
+        }
+        else{
+            setOpen(false)
+        }
+    };
 
     return (
         <div>
-            <ThemeProvider theme={theme}>
-
                 <Button
                     variant="outlined"
                     startIcon={<AddCircleIcon/>}
@@ -59,7 +50,7 @@ function AddTaskModal() {
                 </Button>
                 <div>
                     <Dialog
-                        PaperProps={{sx: {height: "25%", width: '570px'}}}
+                        PaperProps={{sx: {minHeight: "25%", width: '570px'}}}
                         open={open} onClose={handleClose}>
                         <DialogTitle>Add Task</DialogTitle>
                         <DialogContent>
@@ -68,10 +59,9 @@ function AddTaskModal() {
                                     <TextField
                                         id="outlined-select-currency"
                                         select
-                                        label="Select"
+                                        label="Select Color"
                                         value={color}
-                                        helperText="select color"
-                                        style={{width: 100}}
+                                        style={{width: 140}}
                                         onChange={(event) => {
                                             setColor(event.target.value)
                                         }}
@@ -93,14 +83,14 @@ function AddTaskModal() {
                                     required
                                     id="outlined-required"
                                     label="Task Name"
-                                    helperText="Name for task"
+                                    // helperText="Name for task"
                                     color='primary'
                                     onChange={(event) => {
                                         setName(event.target.value)
                                     }}
                                 />
                             </div>
-                            {warning && <p className="warning_message"> *This task has already been created. Please use another name.</p>}
+                            {warning && <p className="warning_message"> {warningMessage} </p>}
                         </DialogContent>
                         <DialogActions>
                             <Button
@@ -131,7 +121,6 @@ function AddTaskModal() {
                         </DialogActions>
                     </Dialog>
                 </div>
-            </ThemeProvider>
         </div>
     )
 }

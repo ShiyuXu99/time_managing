@@ -1,8 +1,7 @@
-import firebase from 'firebase/app'
-import 'firebase/firestore'
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
-
-// Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyAeAmUvhl6xJKL2bnVqGEE8xqR2gT9SJLM",
     authDomain: "time-tracking-fbd44.firebaseapp.com",
@@ -12,13 +11,8 @@ const firebaseConfig = {
     appId: "1:190103436468:web:564fbe8f6903cc76372be1"
 };
 
-// Initialize Firebase
 
+const app = initializeApp(firebaseConfig);
 
-firebase.initializeApp(firebaseConfig)
-
-const projectFirestore = firebase.firestore()
-
-export {projectFirestore}
-
-
+export const db = getFirestore(app);
+export const auth = getAuth(app);

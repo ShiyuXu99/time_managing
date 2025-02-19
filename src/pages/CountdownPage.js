@@ -8,8 +8,8 @@ import './index.css'
 
 import { useStopwatch } from 'react-timer-hook';
 import {projectFirestore} from "../firebase/config";
-import {updateTodayDataAndTaskData} from "../components/utils/calculateTimeSpend";
-import {updateFireBaseData} from "../components/utils/handleFireBase";
+import {updateTodayDataAndTaskData} from "../utils/calculateTimeSpend";
+import {updateFireBaseData} from "../utils/handleFireBase";
 import CircleIcon from "@mui/icons-material/Circle";
 
 function MyStopwatch({ setShowTimer, timerItem, taskByDate, todayData}) {
