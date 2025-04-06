@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react'
 import { useState } from 'react'
 import './MainPage.css'
-import ToodayCharts from '../Components/HourlyChartComponent'
+import ToodayCharts from '../components/HourlyChartComponent'
 import CountdownPage from './CountdownPage'
 import {
     Paper,
@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import Box from '@mui/material/Box';
 import { getFireBaseData } from "../utils/handleFireBase";
-import TaskList from '../Components/TaskListComponent'
+import TaskList from '../components/TaskListComponent'
 
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -27,15 +27,15 @@ function MainPage() {
     const [todayData, setTodayData] = useState({})
 
 
-    useEffect(() => {
-        const fetchData = async () => {
-            // await getFirebaseCollection('taskLists', 'tasks', setTaskLists);
-            await getFireBaseData('todayData', setTodayData);
-            await getFireBaseData('taskDataByDate', setTaskByDate);
-        };
-
-        fetchData();
-    }, [])
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         // await getFirebaseCollection('taskLists', 'tasks', setTaskLists);
+    //         await getFireBaseData('todayData', setTodayData);
+    //         await getFireBaseData('taskDataByDate', setTaskByDate);
+    //     };
+    //
+    //     fetchData();
+    // }, [])
 
     const handleShowTimer = (item) => {
         setTimerItem(item)

@@ -26,7 +26,6 @@ export default function TimeLineChart({showByHours}) {
 
     }, [])
 
-    console.log(data)
     const Appointment = ({ children, style, data, ...restProps }) => (
         <Appointments.Appointment
             {...restProps}

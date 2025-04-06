@@ -8,34 +8,44 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import useStore from "../../store/store";
+import useStore from "../../store/useTaskCategoriesStore";
 import { colorList } from "../../utils/colorList";
+import {useAuth} from "../../hooks/useAuth";
+import {addTaskCategory} from "../../utils/service/taskCategories";
 
 function AddTaskModal() {
     const [open, setOpen] = useState(false);
     const [color, setColor] = useState('');
     const [name, setName] = useState('');
-    const [data, setData] = useState({});
-    const [warning, setWarning] = useState(false);
     const [warningMessage, setWarningMessage] = useState('')
-    const addToTaskLists = useStore(state => state.addToTaskLists);
-
-
+    const { currentUser } = useAuth();
+    const userId = currentUser?.uid;
     const handleOpen = () => setOpen(true);
 
+
     const handleClose = async () => {
-        if (!color || !name) {
-            setWarningMessage('Fields can not be empty')
-            setWarning(true);
-            return;
-        }
-        const result = await addToTaskLists(name, color);
-        if(!result?.success){
-            setWarningMessage(result?.message)
-            setWarning(true);
-        }
-        else{
-            setOpen(false)
+        const categoryData = {
+            name: name,
+            color: color,
+            // icon: icon // Include icon if needed
+        };
+
+        try {
+            const result = await addTaskCategory(userId, categoryData);
+            console.log('Category created:', result);
+            setOpen(false); // Close modal/dialog on success
+            setName('');
+            setColor('#3b82f6');
+            // setIcon('task');
+            // setSuccessMessage('Category created successfully!');
+
+        } catch (error) {
+            console.error('Error creating category:', error);
+            if (error.message.includes('already exists')) {
+                setWarningMessage(error.message);
+            } else {
+                setWarningMessage('Failed to create category. Please try again.');
+            }
         }
     };
 
@@ -90,7 +100,7 @@ function AddTaskModal() {
                                     }}
                                 />
                             </div>
-                            {warning && <p className="warning_message"> {warningMessage} </p>}
+                            {warningMessage && <p className="warning_message"> {warningMessage} </p>}
                         </DialogContent>
                         <DialogActions>
                             <Button
@@ -116,7 +126,6 @@ function AddTaskModal() {
                                 }}
                                 onClick={() => {
                                     setOpen(false)
-                                    setWarning(false)
                                 }}>Cancel</Button>
                         </DialogActions>
                     </Dialog>

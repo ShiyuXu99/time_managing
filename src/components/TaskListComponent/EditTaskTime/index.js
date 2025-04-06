@@ -12,7 +12,7 @@ import EditTaskItem from "./EditTaskItem";
 import {getTitleAndColor} from "../../../utils/generalCalculation";
 import {updateFireBaseData} from "../../../utils/handleFireBase";
 import moment from "moment";
-import useStore from "../../../store/store";
+import useStore from "../../../store/useTaskCategoriesStore";
 import {colorList} from "../../../utils/colorList";
 
 
@@ -22,7 +22,7 @@ function EditTaskTime({open, setOpen, editItem, todayData, taskLists, taskByDate
     const [warningMessage, setWarningMessage] = useState('')
     const [color, setColor] = useState('');
     const [name, setName] = useState('');
-    const updateTaskList = useStore(state => state.updateTaskList);
+    const updateTaskList = [];
 
     const itemData = todayData && todayData[editItem]
     const [recordChange, setRecordChange] = useState([])
@@ -41,38 +41,18 @@ function EditTaskTime({open, setOpen, editItem, todayData, taskLists, taskByDate
     ];
 
     const handleClose = async () => {
-        // let newData = todayData;
-        // let newDataByDate = taskByDate;
-        // const currentDate = moment().format("MM/DD/YYYY");
-        //
-        // recordChange.forEach(([originalSeconds, value], index) => {
-        //     let endTime = moment(itemData[index]['endTime'])
-        //     let newStartTime = endTime.clone().subtract(value, 'second')
-        //
-        //
-        //     if(!endTime.isSame(newStartTime, 'd')){
-        //         newStartTime = endTime.clone().startOf('day')
-        //         value = moment(endTime).diff(moment(endTime.clone().startOf('day')), 'second')
-        //     }
-        //
-        //     newData[editItem][index]['startTime'] = newStartTime.format('YYYY-MM-DDTHH:mm:ss.sssZ')
-        //     newDataByDate[currentDate][editItem] = taskByDate[currentDate][editItem] - originalSeconds + value;
-        // })
-        // updateFireBaseData('todayData', newData)
-        // updateFireBaseData('taskDataByDate', newDataByDate)
-
-        if (!color || !name) {
-            setWarningMessage('Fields can not be empty')
-            setWarning(true);
-            return;
-        }
-        const result = await updateTaskList(name, color);
-        if (!result?.success) {
-            setWarningMessage(result?.message)
-            setWarning(true);
-        } else {
-            setOpen(false)
-        }
+        // if (!color || !name) {
+        //     setWarningMessage('Fields can not be empty')
+        //     setWarning(true);
+        //     return;
+        // }
+        // const result = await updateTaskList(name, color);
+        // if (!result?.success) {
+        //     setWarningMessage(result?.message)
+        //     setWarning(true);
+        // } else {
+        //     setOpen(false)
+        // }
     }
 
     return (

@@ -13,15 +13,16 @@ import CircleIcon from "@mui/icons-material/Circle";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite';
 import EditTaskTime from "./EditTaskTime";
-import {theme} from "../../theme";
 import CustomizedSlider from "../SliderComponent/Slider";
-import {db, projectFirestore} from "../../firebase/config";
 import './index.css'
 import {getFireBaseData, updateFireBaseData} from "../../utils/handleFireBase";
 import {calculateTimeByDate, recordTodayData, updateTodayDataAndTaskData} from "../../utils/calculateTimeSpend";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import { collection, getDocs } from 'firebase/firestore';
-import useStore from "../../store/store";
+import {Timestamp, getDocs, serverTimestamp} from 'firebase/firestore';
+import {getUserTaskCategories, getUserTaskCategoriesRealtime} from "../../utils/service/taskCategories";
+import {getAuth} from "firebase/auth";
+import useTaskStore from "../../store/useTaskCategoriesStore";
+import {addTask} from "../../utils/service/taskAPI";
 
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -37,27 +38,63 @@ function TaskList({ handleShowTimer, showTimer, taskByDate, todayData}) {
     const defaultSliderVal = 30;
     const [sliderValue, setSliderValue] = useState(defaultSliderVal)
     const [hoveredItem, setHoveredItem] = useState(null);
-    const taskLists = useStore(state => state.taskLists);
-    const fetchTaskLists = useStore(state => state.fetchTaskLists);
+    const [taskLists, setTaskLists] = useState([]);
+    const { currentUser } = getAuth();
+    const userId = currentUser?.uid;
 
     useEffect(() => {
-        fetchTaskLists();
-    }, [fetchTaskLists])
+        if (!userId) return;
+
+        const unsubscribe = getUserTaskCategoriesRealtime(
+            userId,
+            (result) => {
+                    useTaskStore.getState().setTaskCategories(result);
+                    setTaskLists(result);
+            }
+        );
+
+        // Clean up on unmount or userId change
+        return () => {
+            try {
+                unsubscribe(); // Safely unsubscribe
+            } catch (error) {
+                console.error("Error unsubscribing:", error);
+            }
+        };
+    }, [userId]);
 
     const handleOpen = (val) => {
         setOpen(true)
         setEditItem(val)
     };
 
-
-    const handleAddTime= (timerItem)=> {
+    const handleAddTime= async (categoryId, name)=> {
         const totalSeconds = sliderValue * 60;
+        const now = new Date();
+        const startTime = Timestamp.fromDate(new Date(now.getTime() - totalSeconds * 1000));
+        const endTime = Timestamp.fromDate(now);
 
-        const [dateDataUpdated, todayDataUpdated] = updateTodayDataAndTaskData(totalSeconds, timerItem, taskByDate, todayData)
-        updateFireBaseData('todayData', todayDataUpdated)
-        updateFireBaseData('taskDataByDate', dateDataUpdated)
+        const taskData = {
+            name: name,
+            // description: taskData.description || '',
+            categoryId: categoryId || null,
+            startTime: startTime,
+            endTime: endTime,
+            duration: totalSeconds || 0,
+            createdAt: serverTimestamp(),
+        }
+
+        try{
+            const result = await addTask(userId, taskData)
+            console.log(result, "add Tasks")
+        } catch (error) {
+            console.error('Error creating category:', error);
+            // setWarningMessage('Failed to create category. Please try again.');
+        }
+
+        // const [dateDataUpdated, todayDataUpdated] = updateTodayDataAndTaskData(totalSeconds, timerItem, taskByDate, todayData)
+        // await updateTaskDataByDate(dateDataUpdated)
     }
-
 
     return (
         <div className="left_container">
@@ -80,7 +117,7 @@ function TaskList({ handleShowTimer, showTimer, taskByDate, todayData}) {
                             <IconButton
                                 disabled={showTimer}
                                 style={{ color: val?.color }}
-                                onClick={() => handleAddTime(val?.id)}
+                                onClick={() => handleAddTime(val?.id, val?.name)}
                                 onMouseEnter={() => setHoveredItem(val?.id)}
                                 onMouseLeave={() => setHoveredItem(null)}
                             >
@@ -90,7 +127,7 @@ function TaskList({ handleShowTimer, showTimer, taskByDate, todayData}) {
                             <ListItemText
                                 primaryTypographyProps={{ fontSize: '14px' }}
                                 secondaryTypographyProps={{ fontSize: '12px' }}
-                                primary={val?.title}
+                                primary={val?.name}
                             />
                             <ListItemIcon>
                                 <IconButton
