@@ -10,10 +10,6 @@ import './index.css'
 import {theme} from "../../../theme";
 import EditTaskItem from "./EditTaskItem";
 import {getTitleAndColor} from "../../../utils/generalCalculation";
-import {updateFireBaseData} from "../../../utils/handleFireBase";
-import moment from "moment";
-import useStore from "../../../store/useTaskCategoriesStore";
-import {colorList} from "../../../utils/colorList";
 
 
 function EditTaskTime({open, setOpen, editItem, todayData, taskLists, taskByDate}) {

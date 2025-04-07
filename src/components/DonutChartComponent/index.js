@@ -2,59 +2,44 @@ import { Doughnut } from 'react-chartjs-2';
 import React, { useEffect, useState } from "react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { formatSecondsToHourMinute } from "../../utils/generalCalculation";
-import {getDailySummaryRealtime} from "../../utils/service/taskAPI";
 import {useAuth} from "../../hooks";
-import useTaskStore from "../../store/useTaskCategoriesStore";
+import useTaskStore from "../../store/useTasksStore";
+import {getCategoryById} from "../../utils/tasksCategoryHelper";
 
 function DoughnutChart() {
-    const [data, setData] = useState(null);
-    const { currentUser } = useAuth(); // Get current user
-    const { getCategoryById } = useTaskStore();
-
-    useEffect(() => {
-        if (!currentUser?.uid) return;
-
-        // Subscribe to realtime daily summary updates
-        const unsubscribe = getDailySummaryRealtime(
-            currentUser.uid,
-            new Date(),
-            (summary) => {
-                console.log(summary)
-                const chartData = transformSummaryToChartData(summary);
-                setData(chartData);
-            }
-        );
-
-        // Cleanup subscription on unmount
-        return () => unsubscribe();
-    }, [currentUser?.uid]);
+    const [chartData, setChartData] = useState(null);
+    const { currentUser } = useAuth();
+    const todayTaskSummaries = useTaskStore(state => state.todayTaskSummaries);
+    const taskCategories = useTaskStore(state => state.taskCategories);
 
     // Transform daily summary to chart.js format
-    const transformSummaryToChartData = (summary) => {
-        const labels = [];
-        const chartData = [];
-        const backgroundColors = [];
-        const hoverColors = [];
+    useEffect(() => {
+        if (!todayTaskSummaries || !todayTaskSummaries.categories) {
+            return; // Exit if data hasn't loaded
+        }
 
-        // Extract categories and durations
-        Object.entries(summary.categories || {}).forEach(([categoryId, catData]) => {
-            const category = getCategoryById(categoryId);
-            labels.push(category?.name); // You'll need to implement getCategoryName
-            chartData.push(catData.duration / 60); // Convert seconds to minutes
-            backgroundColors.push(category?.color); // Implement getCategoryColor
-            // hoverColors.push(getCategoryHoverColor(categoryId));
+        const labels = [];
+        const data = [];
+        const backgroundColor = [];
+
+        Object.entries(todayTaskSummaries.categories).forEach(([id, category], index) => {
+            const taskCategoryData = taskCategories && getCategoryById(id, taskCategories);
+            labels.push(taskCategoryData?.name);
+            data.push(category.duration / 60);
+            backgroundColor.push(taskCategoryData?.color);
         });
 
-        return {
+        setChartData({
             labels,
             datasets: [{
-                data: chartData,
-                backgroundColor: backgroundColors,
-                hoverBackgroundColor: hoverColors,
-                borderWidth: 1
-            }]
-        };
-    };
+                label: 'Time Spent (minutes)',
+                data,
+                backgroundColor,
+                borderColor: '#fff',
+                borderWidth: 2,
+            }],
+        });
+    }, [todayTaskSummaries, taskCategories]);
 
     ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -101,10 +86,10 @@ function DoughnutChart() {
 
     return (
         <div>
-            {data && data.labels.length > 0 ? (
+            {chartData && chartData.labels.length > 0 ? (
                 <Doughnut
                     style={{ width: '450px', height: '450px' }}
-                    data={data}
+                    data={chartData}
                     options={options}
                     plugins={[hoverLabel]}
                 />

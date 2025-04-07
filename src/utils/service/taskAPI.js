@@ -7,15 +7,11 @@ import {
     getDoc,
     deleteDoc,
     query,
-    where,
-    getDocs,
-    onSnapshot,
+    where, onSnapshot,
     Timestamp,
-    arrayUnion,
-    increment,
-    writeBatch
 } from 'firebase/firestore';
 import {db} from "../../firebase/config";
+import {updateDailySummary} from "./dailySummaries";
 
 /**
  * Adds a new task to Firestore and updates daily summaries
@@ -29,14 +25,22 @@ export const addTask = async (userId, taskData) => {
     if (!taskData?.name?.trim()) throw new Error("Task name is required.");
     if (!taskData.startTime) throw new Error("Start time is required.");
 
+    const session = {
+        startTime: taskData.startTime,
+        endTime: taskData.endTime,
+        categoryId: taskData.categoryId
+    }
+
+    await updateDailySummary(userId,session);
+
     try {
         // Basic task structure
         const task = {
             userId,
             name: taskData.name.trim(),
             categoryId: taskData.categoryId || null,
-            startTime: taskData.startTime,
-            endTime: taskData.endTime || null,
+            startTime: Timestamp.fromDate(taskData.startTime),
+            endTime: Timestamp.fromDate(taskData.endTime) || null,
             duration: taskData.duration || 0,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
@@ -141,133 +145,3 @@ export const getTasksRealtime = (userId, callback, filters = {}) => {
         throw new Error(`Failed to fetch tasks: ${error.message}`);
     }
 };
-
-/**
- * Gets daily summaries in real-time
- * @param {string} userId - Required for ownership
- * @param {Date} date - Date to get summary for
- * @param {function} callback - Receives summary data
- * @returns {function} Unsubscribe function
- */
-export const getDailySummaryRealtime = (userId, date, callback) => {
-    const dateString = date.toISOString().split('T')[0];
-    const q = query(
-        collection(db, 'dailySummaries'),
-        where('userId', '==', userId),
-        where('date', '==', dateString)
-    );
-
-    return onSnapshot(q, (snapshot) => {
-        if (snapshot.empty) {
-            callback({
-                date: dateString,
-                totalDuration: 0,
-                categories: {}
-            });
-            return;
-        }
-
-        const summaryDoc = snapshot.docs[0];
-        const data = summaryDoc.data();
-        callback({
-            date: data.date,
-            totalDuration: data.totalDuration || 0,
-            categories: data.categories || {}
-        });
-    }, (error) => {
-        console.error("Daily summary error:", error);
-    });
-};
-
-/**
- * Splits a task across multiple days and updates summaries
- * @param {object} task - The task document
- * @returns {Promise<void>}
- */
-export const updateTaskDailySegments = async (task) => {
-    if (!task.endTime) return; // Only process completed tasks
-
-    const batch = writeBatch(db);
-    const userId = task.userId;
-    const taskId = task.id;
-
-    // Delete existing segments for this task
-    const segmentsQuery = query(
-        collection(db, 'dailyTaskSegments'),
-        where('taskId', '==', taskId)
-    );
-    const existingSegments = await getDocs(segmentsQuery);
-    existingSegments.forEach(doc => batch.delete(doc.ref));
-
-    // Create new segments
-    const segments = splitTaskByDays(task);
-    segments.forEach(segment => {
-        const segRef = doc(collection(db, 'dailyTaskSegments'));
-        batch.set(segRef, segment);
-    });
-
-    // Update daily summaries
-    const daysToUpdate = new Set(segments.map(s => s.date));
-    for (const dateStr of daysToUpdate) {
-        const daySegments = segments.filter(s => s.date === dateStr);
-        const dayDuration = daySegments.reduce((sum, seg) => sum + seg.duration, 0);
-
-        const dailySummaryRef = doc(db, 'dailySummaries', dateStr);
-        const categoryUpdates = {};
-
-        daySegments.forEach(seg => {
-            if (!categoryUpdates[seg.categoryId]) {
-                categoryUpdates[seg.categoryId] = {
-                    duration: 0,
-                    sessions: []
-                };
-            }
-            categoryUpdates[seg.categoryId].duration += seg.duration;
-            categoryUpdates[seg.categoryId].sessions.push({
-                start: seg.startTime,
-                end: seg.endTime
-            });
-        });
-
-        batch.set(dailySummaryRef, {
-            userId,
-            date: dateStr,
-            totalDuration: increment(dayDuration),
-            categories: categoryUpdates,
-            updatedAt: serverTimestamp()
-        }, { merge: true });
-    }
-
-    await batch.commit();
-};
-
-// Helper function to split tasks across days
-function splitTaskByDays(task) {
-    const segments = [];
-    let currentStart = task.startTime.toDate();
-    const end = task.endTime.toDate();
-
-    while (currentStart < end) {
-        const currentDate = new Date(currentStart);
-        currentDate.setHours(0, 0, 0, 0);
-        const nextDay = new Date(currentDate);
-        nextDay.setDate(nextDay.getDate() + 1);
-
-        const segmentEnd = new Date(Math.min(end, nextDay));
-        const duration = (segmentEnd - currentStart) / 1000;
-
-        segments.push({
-            userId: task.userId,
-            taskId: task.id,
-            categoryId: task.categoryId,
-            date: currentDate.toISOString().split('T')[0],
-            startTime: currentStart,
-            endTime: segmentEnd,
-            duration: duration
-        });
-
-        currentStart = segmentEnd;
-    }
-
-    return segments;
-}

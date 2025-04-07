@@ -1,34 +1,42 @@
-import './index.css'
+import './index.css';
 import React from "react";
-import AddTaskModal from "../AddTaskModalComponent";
 import DoughnutChart from "../DonutChartComponent";
 import TimeLineChart from '../TimeLineChart';
+import { Box } from "@mui/material";
 
-
-function ToodayCharts() {
+function TodayCharts() {
     return (
-        <div className="graphDiv" >
-            <div className="today_graph_container_left">
-                <TimeLineChart showByHours={true}/>
-            </div>
-            <div className="today_graph_container_right">
-                <div className="graphDivInner" >
-                    <DoughnutChart/>
-                </div>
+        <Box
+            sx={{
+                display: 'flex',
+                gap: '16px',
+                flexWrap: 'wrap',
+                width: '100%',
+            }}
+        >
+            <Box
+                sx={{
+                    flex: '1 1 0%',
+                    minWidth: '500px',
+                    borderRadius: '8px',
+                }}
+            >
+                <TimeLineChart />
+            </Box>
 
-                <div className="add_task_btn_container">
-                    <AddTaskModal/>
-                </div>
-            </div>
-
-
-        </div>
-
-)
+            <Box
+                sx={{
+                    flex: '1 1 0%',
+                    minWidth: '200px',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    alignContent:'center'
+                }}
+            >
+                <DoughnutChart />
+            </Box>
+        </Box>
+    );
 }
 
-
-
-
-
-export default ToodayCharts;
+export default TodayCharts;

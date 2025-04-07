@@ -8,7 +8,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import useStore from "../../store/useTaskCategoriesStore";
 import { colorList } from "../../utils/colorList";
 import {useAuth} from "../../hooks/useAuth";
 import {addTaskCategory} from "../../utils/service/taskCategories";

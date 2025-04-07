@@ -1,15 +1,15 @@
-import React, {useEffect} from 'react'
-import { useState } from 'react'
+import React, {useEffect, useState} from 'react'
 import './MainPage.css'
-import ToodayCharts from '../components/HourlyChartComponent'
+import TodayCharts from '../components/HourlyChartComponent'
 import CountdownPage from './CountdownPage'
-import {
-    Paper,
-    styled
-} from "@mui/material";
+import {Paper, styled} from "@mui/material";
 import Box from '@mui/material/Box';
-import { getFireBaseData } from "../utils/handleFireBase";
 import TaskList from '../components/TaskListComponent'
+import {getAuth} from "firebase/auth";
+import {getDailySummaries} from "../utils/service/dailySummaries";
+import {isToday, parseISO} from 'date-fns';
+import {getUserTaskCategoriesRealtime} from "../utils/service/taskCategories";
+import useTaskStore from "../store/useTasksStore";
 
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -24,18 +24,41 @@ function MainPage() {
     const [showTimer, setShowTimer] = useState(false)
     const [timerItem, setTimerItem] = useState()
     const [taskByDate, setTaskByDate] = useState({})
-    const [todayData, setTodayData] = useState({})
+    const setTaskCategories = useTaskStore(state => state.setTaskCategories);
+    const setTaskSummaries = useTaskStore(state => state.setTaskSummaries);
+    const setTodayTaskSummaries = useTaskStore(state => state.setTodayTaskSummaries);
+
+    const { currentUser } = getAuth();
+    const userId = currentUser?.uid;
+
+    useEffect(() => {
+        const unsubscribeTaskSummaries = getDailySummaries(
+            { userId },
+            (data) => {
+                const today = new Date();
+                const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                const todaysData = data.find(summary => summary.id === todayString);
+                setTodayTaskSummaries(todaysData);
+                setTaskSummaries(data);
+            }
+        );
+
+        const unsubscribeTaskCategories = getUserTaskCategoriesRealtime(
+            userId, (result) => {setTaskCategories(result);}
+        );
+
+        // Clean up on unmount or userId change
+        return () => {
+            try {
+                unsubscribeTaskSummaries();
+                unsubscribeTaskCategories();
+            } catch (error) {
+                console.error("Error unsubscribing:", error);
+            }
+        };
+    }, [userId]);
 
 
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         // await getFirebaseCollection('taskLists', 'tasks', setTaskLists);
-    //         await getFireBaseData('todayData', setTodayData);
-    //         await getFireBaseData('taskDataByDate', setTaskByDate);
-    //     };
-    //
-    //     fetchData();
-    // }, [])
 
     const handleShowTimer = (item) => {
         setTimerItem(item)
@@ -44,38 +67,44 @@ function MainPage() {
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
-        <Box className="box">
-                <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
-                    <div className="leftBlock">
-                        <TaskList
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', padding:'7px', height:'100%'}}>
+                <Box
+                    sx={{
+                        minWidth: '320px',
+                        marginRight: '10px',
+                    }}
+                >
+                    <TaskList
                         handleShowTimer={handleShowTimer}
-                        showTimer = {showTimer}
-                        taskByDate = {taskByDate}
-                        todayData = {todayData}
+                        showTimer={showTimer}
+                        taskByDate={taskByDate}
                     />
-                        </div>
-
-                    <Item className="rightBlock">
-                        <div className="rightSection">
-                                {showTimer ?
-                                    <CountdownPage
-                                        setShowTimer = {setShowTimer}
-                                        timerItem = {timerItem}
-                                        taskByDate = {taskByDate}
-                                        todayData = {todayData}
-                                    />
-                                    :
-                                    <div className="graphRight">
-                                    <ToodayCharts />
-                                    </div>
-                                }
-                        </div>
-                    </Item>
                 </Box>
-        </Box>
-        </div>
 
-    )
+                <Box
+                    component={Item}
+                    sx={{
+                        flex: 1,
+                        minWidth: '400px',
+                    }}
+                >
+                    <Box sx={{ width: '100%' }}>
+                        {showTimer ? (
+                            <CountdownPage
+                                setShowTimer={setShowTimer}
+                                timerItem={timerItem}
+                                taskByDate={taskByDate}
+                            />
+                        ) : (
+                            <Box sx={{ width: '100%' }}>
+                                <TodayCharts />
+                            </Box>
+                        )}
+                    </Box>
+                </Box>
+            </Box>
+        </div>
+    );
 }
 
 export default MainPage
