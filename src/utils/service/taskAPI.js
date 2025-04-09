@@ -7,14 +7,16 @@ import {
     getDoc,
     deleteDoc,
     query,
-    where, onSnapshot,
+    where,
+    onSnapshot,
     Timestamp,
+    runTransaction
 } from 'firebase/firestore';
 import {db} from "../../firebase/config";
 import {addDailySummary, updateDailySummary} from "./dailySummaries";
 
 /**
- * Adds a new task to Firestore and updates daily summaries
+ * Adds a new task to Firestore (now in user subcollection)
  * @param {string} userId - Current user's UID
  * @param {object} taskData - Task properties
  * @returns {Promise<{ id: string, ...taskData }>}
@@ -26,21 +28,23 @@ export const addTask = async (userId, taskData) => {
     if (!taskData.startTime) throw new Error("Start time is required.");
 
     try {
-        // Basic task structure
+        // Reference to user's tasks subcollection
+        const userTasksRef = collection(db, 'users', userId, 'tasks');
+
         const task = {
-            userId,
             name: taskData.name.trim(),
             categoryId: taskData.categoryId || null,
             startTime: Timestamp.fromDate(taskData.startTime),
-            endTime: Timestamp.fromDate(taskData.endTime) || null,
-            duration: taskData.duration || 0,
+            endTime: taskData.endTime ? Timestamp.fromDate(taskData.endTime) : null,
+            duration: taskData.duration || calculateDurationIfMissing(taskData.startTime, taskData.endTime) || 0,
             notes: taskData.notes || '',
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
         };
 
-        const docRef = await addDoc(collection(db, 'tasks'), task);
+        const docRef = await addDoc(userTasksRef, task);
 
+        // Update daily summaries
         await addDailySummaryUpdate(taskData, docRef.id, userId);
 
         return { id: docRef.id, ...task };
@@ -51,35 +55,38 @@ export const addTask = async (userId, taskData) => {
 };
 
 /**
- * Updates an existing task and recalculates daily summaries
- * @param {string} userId - Verifies ownership
+ * Updates an existing task in user subcollection
+ * @param {string} userId - Verifies ownership via path
  * @param {string} taskId - Document ID to update
  * @param {object} updates - Fields to update
  * @returns {Promise<void>}
- * @throws {Error} If unauthorized or Firestore fails
+ * @throws {Error} If task not found or Firestore fails
  */
 export const updateTask = async (userId, taskId, updates) => {
     if (!userId || !taskId) throw new Error("User ID and Task ID required.");
     if (!updates || Object.keys(updates).length === 0) throw new Error("No updates provided.");
 
-    const taskRef = doc(db, 'tasks', taskId);
-    const taskSnap = await getDoc(taskRef);
-
-    if (!taskSnap.exists()) throw new Error("Task not found.");
-    if (taskSnap.data().userId !== userId) throw new Error("Unauthorized: Not your task.");
-
-    const duration = calculateDurationIfMissing(updates.startTime, updates.endTime);
-    const updatedData = {
-        ...updates,
-        duration
-    }
+    const taskRef = doc(db, 'users', userId, 'tasks', taskId);
 
     try {
-        const result = await updateDoc(taskRef, {
-            ...updatedData,
+        // Calculate duration if times are being updated
+        const duration = updates.startTime || updates.endTime
+            ? calculateDurationIfMissing(
+                updates.startTime || (await getDoc(taskRef)).data().startTime,
+                updates.endTime || (await getDoc(taskRef)).data().endTime
+            )
+            : undefined;
+
+        const updateData = {
+            ...updates,
             updatedAt: serverTimestamp()
-        });
-        console.log(result, "this is result")
+        };
+
+        if (duration !== undefined) {
+            updateData.duration = duration;
+        }
+
+        await updateDoc(taskRef, updateData);
     } catch (error) {
         console.error("Firestore updateTask error:", error);
         throw new Error(`Failed to update task: ${error.message}`);
@@ -87,20 +94,16 @@ export const updateTask = async (userId, taskId, updates) => {
 };
 
 /**
- * Deletes a task and cleans up daily summaries
- * @param {string} userId - Must match task's userId
+ * Deletes a task from user subcollection
+ * @param {string} userId - Must match path
  * @param {string} taskId - Document ID to delete
  * @returns {Promise<void>}
- * @throws {Error} If deletion fails or unauthorized
+ * @throws {Error} If deletion fails
  */
 export const deleteTask = async (userId, taskId) => {
     if (!userId || !taskId) throw new Error("User ID and Task ID required.");
 
-    const taskRef = doc(db, 'tasks', taskId);
-    const taskSnap = await getDoc(taskRef);
-
-    if (!taskSnap.exists()) throw new Error("Task not found.");
-    if (taskSnap.data().userId !== userId) throw new Error("Unauthorized: Not your task.");
+    const taskRef = doc(db, 'users', userId, 'tasks', taskId);
 
     try {
         await deleteDoc(taskRef);
@@ -111,8 +114,8 @@ export const deleteTask = async (userId, taskId) => {
 };
 
 /**
- * Gets tasks in real-time with optional filters
- * @param {string} userId - Required for ownership
+ * Gets tasks in real-time from user subcollection
+ * @param {string} userId - Required for path
  * @param {function} callback - Receives tasks array
  * @param {object} [filters] - Optional filters
  * @returns {function} Unsubscribe function
@@ -122,9 +125,9 @@ export const getTasksRealtime = (userId, callback, filters = {}) => {
     if (!userId) throw new Error("User ID required.");
 
     try {
-        let q = query(
-            collection(db, 'tasks'),
-            where('userId', '==', userId)
+        const q = query(
+            collection(db, 'users', userId, 'tasks'),
+            ...buildFilters(filters) // Add any additional filters
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -149,22 +152,36 @@ export const getTasksRealtime = (userId, callback, filters = {}) => {
     }
 };
 
-
-export const calculateDurationIfMissing = (start, end) => {
-        const startTime = start instanceof Timestamp
-            ? start.toDate()
-            : start;
-
-        const endTime = end instanceof Timestamp
-            ? end.toDate()
-            : end;
-
-        if (startTime && endTime) {
-            const durationMs = endTime - startTime;
-            return Math.floor(durationMs / 1000); // in seconds
-        }
+// Helper function to build query filters
+const buildFilters = (filters) => {
+    const queryFilters = [];
+    if (filters.categoryId) {
+        queryFilters.push(where('categoryId', '==', filters.categoryId));
+    }
+    if (filters.startDate) {
+        queryFilters.push(where('startTime', '>=', Timestamp.fromDate(filters.startDate)));
+    }
+    if (filters.endDate) {
+        queryFilters.push(where('startTime', '<=', Timestamp.fromDate(filters.endDate)));
+    }
+    return queryFilters;
 };
 
+// Helper function to calculate duration
+export const calculateDurationIfMissing = (start, end) => {
+    if (!start || !end) return 0;
+
+    const startTime = start instanceof Timestamp ? start.toDate() : start;
+    const endTime = end instanceof Timestamp ? end.toDate() : end;
+
+    if (startTime && endTime) {
+        const durationMs = endTime - startTime;
+        return Math.floor(durationMs / 1000); // Return seconds
+    }
+    return 0;
+};
+
+// Helper function to update daily summaries
 const addDailySummaryUpdate = async (taskData, taskId, userId) => {
     const session = {
         startTime: taskData.startTime,
@@ -172,7 +189,7 @@ const addDailySummaryUpdate = async (taskData, taskId, userId) => {
         categoryId: taskData.categoryId,
         notes: taskData.notes || '',
         taskId: taskId || '',
-    }
+    };
 
     await addDailySummary(userId, session);
-}
+};

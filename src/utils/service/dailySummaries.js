@@ -3,18 +3,19 @@ import { addDays, startOfDay, endOfDay, isWithinInterval, differenceInSeconds, f
 import {db} from "../../firebase/config";
 
 /**
- * Subscribe to real-time updates for daily summaries
- * @param {object} options - Query options (same as getDailySummaries)
- * @param {function} callback - Called with updates (receives summaries array)
- * @returns {function} Unsubscribe function to stop listening
+ * Subscribe to real-time updates for daily summaries (now in user subcollection)
+ * @param {object} options - Query options
+ * @param {function} callback - Called with updates
+ * @returns {function} Unsubscribe function
  */
 export const getDailySummaries = (options, callback) => {
     const { userId, date, startDate, endDate, withCategories = true } = options;
-    const summariesRef = collection(db, 'dailySummaries');
+    if (!userId) throw new Error("User ID is required.");
+
+    const summariesRef = collection(db, 'users', userId, 'dailySummaries');
     let q = query(summariesRef);
 
-    // Build the query (same as before)
-    if (userId) q = query(q, where('userId', '==', userId));
+    // Build the query using document ID as date
     if (date) {
         const dateString = format(typeof date === 'string' ? new Date(date) : date, 'yyyy-MM-dd');
         q = query(q, where('__name__', '==', dateString));
@@ -24,7 +25,6 @@ export const getDailySummaries = (options, callback) => {
         q = query(q, orderBy('__name__'), startAt(start), endAt(end));
     }
 
-    // Set up real-time listener
     const unsubscribe = onSnapshot(q, (snapshot) => {
         const results = [];
         snapshot.forEach((doc) => {
@@ -38,7 +38,7 @@ export const getDailySummaries = (options, callback) => {
             results.push(summary);
         });
 
-        // Filter by precise date range (Firestore string ranges are approximate)
+        // Filter by precise date range
         const filteredResults = results.filter((summary) => {
             if (!startDate && !endDate) return true;
             return isWithinInterval(summary.date, {
@@ -47,20 +47,17 @@ export const getDailySummaries = (options, callback) => {
             });
         });
 
-        // Sort by date
         filteredResults.sort((a, b) => a.date - b.date);
         callback(filteredResults);
     });
 
-    return unsubscribe; // Return cleanup function
+    return unsubscribe;
 };
 
 export const addDailySummary = async (userId, taskInfo) => {
     if (!userId) throw new Error("User ID is required.");
     if (!taskInfo?.startTime || !taskInfo?.endTime) throw new Error("Start and end time are required.");
-    if (taskInfo.endTime < taskInfo.startTime) {
-        throw new Error("End time cannot be before start time.");
-    }
+    if (taskInfo.endTime < taskInfo.startTime) throw new Error("End time cannot be before start time.");
 
     const processedDays = [];
     const daySegments = handleMultiDaySession(
@@ -89,9 +86,9 @@ export const addDailySummary = async (userId, taskInfo) => {
     return { success: true, processedDays };
 };
 
-// Helper function to add a single day's summary with notes
+// Helper function to add a single day's summary
 const addSingleDaySummary = async (userId, dateString, taskInfo) => {
-    const dateDocRef = doc(db, 'dailySummaries', dateString);
+    const dateDocRef = doc(db, 'users', userId, 'dailySummaries', dateString);
     const sessionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     const sessionData = {
         id: sessionId,
@@ -129,7 +126,6 @@ const addSingleDaySummary = async (userId, dateString, taskInfo) => {
             });
         } else {
             transaction.set(dateDocRef, {
-                userId,
                 date: new Date(dateString),
                 totalDuration: taskInfo.duration,
                 categories: {
@@ -144,15 +140,57 @@ const addSingleDaySummary = async (userId, dateString, taskInfo) => {
         }
     });
 };
-// Helper function to format date as YYYY-MM-DD
-const formatDateString = (date) => {
-    if (!(date instanceof Date)) {
-        throw new Error('Invalid date object provided to formatDateString');
-    }
-    return format(date, 'yyyy-MM-dd');
+
+export const removeSessionFromDailySummary = async (userId, dateString, categoryId, sessionId) => {
+    const dateDocRef = doc(db, 'users', userId, 'dailySummaries', dateString);
+
+    await runTransaction(db, async (transaction) => {
+        const docSnap = await transaction.get(dateDocRef);
+        if (!docSnap.exists()) throw new Error(`Summary not found for ${dateString}`);
+
+        const data = docSnap.data();
+        const categories = { ...(data.categories || {}) };
+        const category = categories[categoryId];
+        if (!category) throw new Error(`Category ${categoryId} not found`);
+
+        const sessionIndex = category.sessions.findIndex(s => s.id === sessionId);
+        if (sessionIndex === -1) throw new Error(`Session ${sessionId} not found`);
+
+        const session = category.sessions[sessionIndex];
+        const duration = differenceInSeconds(
+            session.end.toDate ? session.end.toDate() : new Date(session.end),
+            session.start.toDate ? session.start.toDate() : new Date(session.start)
+        );
+
+        category.sessions.splice(sessionIndex, 1);
+        category.duration -= duration;
+
+        if (category.sessions.length === 0) {
+            delete categories[categoryId];
+        }
+
+        transaction.update(dateDocRef, {
+            categories,
+            totalDuration: data.totalDuration - duration,
+            updatedAt: serverTimestamp()
+        });
+    });
+
+    return { success: true };
 };
 
-// Updated helper function to split a multi-day session into daily segments with notes
+export const updateDailySummary = async (userId, oldSessionInfo, newSessionInfo) => {
+    const { dateString, categoryId, sessionId } = oldSessionInfo;
+
+    await removeSessionFromDailySummary(userId, dateString, categoryId, sessionId);
+    await addDailySummary(userId, newSessionInfo);
+
+    return { success: true };
+};
+
+// Helper functions remain unchanged
+const formatDateString = (date) => format(date, 'yyyy-MM-dd');
+
 const handleMultiDaySession = (startTime, endTime, notes = '', taskId = '') => {
     const segments = [];
     let currentDayStart = startOfDay(startTime);
@@ -161,7 +199,6 @@ const handleMultiDaySession = (startTime, endTime, notes = '', taskId = '') => {
     while (currentDayStart <= sessionEnd) {
         const nextDayStart = addDays(currentDayStart, 1);
         const dayEnd = nextDayStart < sessionEnd ? nextDayStart : sessionEnd;
-
         const dayStart = currentDayStart > startTime ? currentDayStart : startTime;
         const duration = differenceInSeconds(dayEnd, dayStart);
 
@@ -176,68 +213,8 @@ const handleMultiDaySession = (startTime, endTime, notes = '', taskId = '') => {
                 taskId
             });
         }
-
         currentDayStart = nextDayStart;
     }
 
     return segments;
 };
-
-
-export const removeSessionFromDailySummary = async (userId, dateString, categoryId, sessionId) => {
-    const dateDocRef = doc(db, 'dailySummaries', dateString);
-
-    await runTransaction(db, async (transaction) => {
-        const docSnap = await transaction.get(dateDocRef);
-        if (!docSnap.exists()) throw new Error(`Summary not found for ${dateString}`);
-
-        const data = docSnap.data();
-        const categories = { ...(data.categories || {}) };
-        const category = categories[categoryId];
-        if (!category) throw new Error(`Category ${categoryId} not found`);
-
-        console.log(sessionId, category.sessions.findIndex(s => s.id === sessionId))
-        const sessionIndex = category.sessions.findIndex(s => s.id === sessionId);
-        if (sessionIndex === -1) throw new Error(`Session ${sessionId} not found`);
-
-        const session = category.sessions[sessionIndex];
-        const sessionStart = session.start.toDate ? session.start.toDate() : new Date(session.start);
-        const sessionEnd = session.end.toDate ? session.end.toDate() : new Date(session.end);
-        const duration = differenceInSeconds(sessionEnd, sessionStart);
-
-        // Remove session
-        category.sessions.splice(sessionIndex, 1);
-        category.duration -= duration;
-
-        if (category.sessions.length === 0) {
-            delete categories[categoryId];
-        }
-
-        const newTotalDuration = (data.totalDuration || 0) - duration;
-
-        transaction.update(dateDocRef, {
-            categories,
-            totalDuration: newTotalDuration,
-            updatedAt: serverTimestamp()
-        });
-    });
-
-    return { success: true };
-};
-
-
-export const updateDailySummary = async (userId, oldSessionInfo, newSessionInfo) => {
-    const { dateString, categoryId, sessionId } = oldSessionInfo;
-
-    // Step 1: Remove old session
-    await removeSessionFromDailySummary(userId, dateString, categoryId, sessionId);
-
-    // Step 2: Add new session (might span multiple days)
-    await addDailySummary(userId, {
-        ...newSessionInfo,
-    });
-
-    return { success: true };
-};
-
-
