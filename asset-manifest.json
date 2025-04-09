@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/time_managing/static/css/main.2833cd3a.css",
-    "main.js": "/time_managing/static/js/main.8660b4a1.js",
+    "main.js": "/time_managing/static/js/main.250f5a83.js",
     "index.html": "/time_managing/index.html",
     "main.2833cd3a.css.map": "/time_managing/static/css/main.2833cd3a.css.map",
-    "main.8660b4a1.js.map": "/time_managing/static/js/main.8660b4a1.js.map"
+    "main.250f5a83.js.map": "/time_managing/static/js/main.250f5a83.js.map"
   },
   "entrypoints": [
     "static/css/main.2833cd3a.css",
-    "static/js/main.8660b4a1.js"
+    "static/js/main.250f5a83.js"
   ]
 }
