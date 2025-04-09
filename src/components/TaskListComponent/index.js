@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, { useState } from 'react'
 import {
     IconButton,
     List,
@@ -7,7 +7,7 @@ import {
     ListItemIcon,
     ListItemText,
     Paper,
-    styled, ThemeProvider
+    styled,
 } from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
@@ -16,12 +16,12 @@ import EditTaskTime from "./EditTaskTime";
 import CustomizedSlider from "../SliderComponent/Slider";
 import './index.css'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import {Timestamp, getDocs, serverTimestamp} from 'firebase/firestore';
-import {getUserTaskCategoriesRealtime} from "../../utils/service/taskCategories";
+import { serverTimestamp} from 'firebase/firestore';
 import {getAuth} from "firebase/auth";
 import {addTask} from "../../utils/service/taskAPI";
 import useTaskStore from "../../store/useTasksStore";
 import AddTaskModal from "../AddTaskModalComponent";
+import {colorList} from "../../utils/colorList";
 
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -31,15 +31,27 @@ const Item = styled(Paper)(({ theme }) => ({
     color: theme.palette.text.secondary,
 }));
 
-function TaskList({ handleShowTimer, showTimer, taskByDate, todayData}) {
+function TaskList({ handleShowTimer, showTimer}) {
     const [open, setOpen] = useState(false);
-    const [editItem, setEditItem] = useState()
+    const [editTaskItem, setEditItem] = useState()
     const defaultSliderVal = 30;
     const [sliderValue, setSliderValue] = useState(defaultSliderVal)
     const [hoveredItem, setHoveredItem] = useState(null);
     const taskLists = useTaskStore(state => state.taskCategories);
     const { currentUser } = getAuth();
     const userId = currentUser?.uid;
+
+    const colorOrderMap = colorList.reduce((acc, colorObj, index) => {
+        acc[colorObj.value.toLowerCase()] = index; // Order is determined by position in colorList
+        return acc;
+    }, {});
+
+    const sortedTaskList = taskLists.slice().sort((a, b) => {
+        const aIndex = colorOrderMap[a.color.toLowerCase()] ?? Infinity;
+        const bIndex = colorOrderMap[b.color.toLowerCase()] ?? Infinity;
+        return aIndex - bIndex;
+    });
+
 
     const handleOpen = (val) => {
         setOpen(true)
@@ -60,6 +72,7 @@ function TaskList({ handleShowTimer, showTimer, taskByDate, todayData}) {
             endTime: endTime,
             duration: totalSeconds || 0,
             createdAt: serverTimestamp(),
+            notes:'',
         }
 
         try{
@@ -69,9 +82,6 @@ function TaskList({ handleShowTimer, showTimer, taskByDate, todayData}) {
             console.error('Error creating category:', error);
             // setWarningMessage('Failed to create category. Please try again.');
         }
-
-        // const [dateDataUpdated, todayDataUpdated] = updateTodayDataAndTaskData(totalSeconds, timerItem, taskByDate, todayData)
-        // await updateTaskDataByDate(dateDataUpdated)
     }
 
     return (
@@ -89,7 +99,7 @@ function TaskList({ handleShowTimer, showTimer, taskByDate, todayData}) {
                 />
 
                 <List className="list" >
-                    {taskLists?.map((val) => (
+                    {sortedTaskList?.map((val) => (
                         <ListItem key={val?.id}>
                             <ListItemAvatar>
                             <IconButton
@@ -114,7 +124,7 @@ function TaskList({ handleShowTimer, showTimer, taskByDate, todayData}) {
                                     disableRipple
                                     disabled= {showTimer}
                                     style={showTimer?  { color: 'grey', marginRight: '1.5px'}: { color: val?.color, marginRight: '1.5px' }}
-                                    onClick={() => handleOpen(val?.id)}
+                                    onClick={() => handleOpen(val)}
                                 >
                                     <DriveFileRenameOutlineIcon sx={{ fontSize: "18px" }} />
                                 </IconButton>
@@ -131,16 +141,14 @@ function TaskList({ handleShowTimer, showTimer, taskByDate, todayData}) {
                     ))}
                 </List>
                 </div>
+                {open && <EditTaskTime
+                    open={open}
+                    setOpen={setOpen}
+                    taskInfo={editTaskItem}
+                />}
                 <AddTaskModal/>
             </Item>
-            {open && <EditTaskTime
-                open={open}
-                setOpen={setOpen}
-                editItem={editItem}
-                todayData={todayData}
-                taskLists={taskLists}
-                taskByDate={taskByDate}
-            />}
+
         </div>
 
     )

@@ -1,15 +1,13 @@
 import React, {useEffect, useState} from 'react'
-import './MainPage.css'
-import TodayCharts from '../components/HourlyChartComponent'
-import CountdownPage from './CountdownPage'
+import TodayCharts from '../components/TodayCharts'
 import {Paper, styled} from "@mui/material";
 import Box from '@mui/material/Box';
 import TaskList from '../components/TaskListComponent'
 import {getAuth} from "firebase/auth";
 import {getDailySummaries} from "../utils/service/dailySummaries";
-import {isToday, parseISO} from 'date-fns';
 import {getUserTaskCategoriesRealtime} from "../utils/service/taskCategories";
 import useTaskStore from "../store/useTasksStore";
+import {CountdownPage} from "./CountdownPage";
 
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -22,12 +20,12 @@ const Item = styled(Paper)(({ theme }) => ({
 
 function MainPage() {
     const [showTimer, setShowTimer] = useState(false)
-    const [timerItem, setTimerItem] = useState()
+    const [timerTaskId, setTimerTaskId] = useState('')
     const [taskByDate, setTaskByDate] = useState({})
+    const [taskCategoriesData, setTaskCategoriesData ] = useState()
     const setTaskCategories = useTaskStore(state => state.setTaskCategories);
     const setTaskSummaries = useTaskStore(state => state.setTaskSummaries);
     const setTodayTaskSummaries = useTaskStore(state => state.setTodayTaskSummaries);
-
     const { currentUser } = getAuth();
     const userId = currentUser?.uid;
 
@@ -44,7 +42,10 @@ function MainPage() {
         );
 
         const unsubscribeTaskCategories = getUserTaskCategoriesRealtime(
-            userId, (result) => {setTaskCategories(result);}
+            userId, (result) => {
+                setTaskCategories(result);
+                setTaskCategoriesData(result)
+            }
         );
 
         // Clean up on unmount or userId change
@@ -59,9 +60,8 @@ function MainPage() {
     }, [userId]);
 
 
-
-    const handleShowTimer = (item) => {
-        setTimerItem(item)
+    const handleShowTimer = (taskId) => {
+        setTimerTaskId(taskId)
         setShowTimer(true)
     }
 
@@ -90,11 +90,11 @@ function MainPage() {
                 >
                     <Box sx={{ width: '100%' }}>
                         {showTimer ? (
-                            <CountdownPage
-                                setShowTimer={setShowTimer}
-                                timerItem={timerItem}
-                                taskByDate={taskByDate}
-                            />
+                                <CountdownPage
+                                    setShowTimer = {setShowTimer}
+                                    timerTaskId = {timerTaskId}
+                                    taskCategories= {taskCategoriesData}
+                                />
                         ) : (
                             <Box sx={{ width: '100%' }}>
                                 <TodayCharts />

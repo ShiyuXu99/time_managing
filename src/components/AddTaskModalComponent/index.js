@@ -1,6 +1,6 @@
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CircleIcon from '@mui/icons-material/Circle';
-import { Button, MenuItem, TextField } from "@mui/material";
+import {Box, Button, FormControl, InputLabel, MenuItem, Select, TextField} from "@mui/material";
 import React, { useState } from 'react';
 import './index.css';
 
@@ -14,8 +14,8 @@ import {addTaskCategory} from "../../utils/service/taskCategories";
 
 function AddTaskModal() {
     const [open, setOpen] = useState(false);
-    const [color, setColor] = useState('');
-    const [name, setName] = useState('');
+    const [selectedColor, setSelectedColor] = useState('');
+    const [taskName, setTaskName] = useState('');
     const [warningMessage, setWarningMessage] = useState('')
     const { currentUser } = useAuth();
     const userId = currentUser?.uid;
@@ -24,8 +24,8 @@ function AddTaskModal() {
 
     const handleClose = async () => {
         const categoryData = {
-            name: name,
-            color: color,
+            name: taskName,
+            color: selectedColor,
             // icon: icon // Include icon if needed
         };
 
@@ -33,8 +33,8 @@ function AddTaskModal() {
             const result = await addTaskCategory(userId, categoryData);
             console.log('Category created:', result);
             setOpen(false); // Close modal/dialog on success
-            setName('');
-            setColor('#3b82f6');
+            setTaskName('');
+            setSelectedColor('');
             // setIcon('task');
             // setSuccessMessage('Category created successfully!');
 
@@ -58,74 +58,76 @@ function AddTaskModal() {
                     Add Task
                 </Button>
                 <div>
-                    <Dialog
-                        PaperProps={{sx: {minHeight: "25%", width: '570px'}}}
-                        open={open} onClose={handleClose}>
+                    <Dialog open={open} onClose={()=> setOpen(false)} maxWidth="xs" fullWidth>
                         <DialogTitle>Add Task</DialogTitle>
                         <DialogContent>
-                            <div className="initialize_inputs">
-                                <div className="color_input">
-                                    <TextField
-                                        id="outlined-select-currency"
-                                        select
+                            <Box sx={{
+                                display: 'flex',
+                                gap: 2,
+                                pt: 1,
+                                alignItems: 'center' // This ensures vertical alignment
+                            }}>
+                                <FormControl sx={{ flex: 1 }} size="small">
+                                    <InputLabel id="color-select-label">Color</InputLabel>
+                                    <Select
+                                        labelId="color-select-label"
+                                        value={selectedColor}
                                         label="Select Color"
-                                        value={color}
-                                        style={{width: 140}}
-                                        onChange={(event) => {
-                                            setColor(event.target.value)
-                                        }}
-                                        color='primary'
+                                        onChange={(e) => setSelectedColor(e.target.value)}
+                                        renderValue={(selected) => (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Box sx={{
+                                                    width: 20,
+                                                    height: 20,
+                                                    backgroundColor: selected,
+                                                    borderRadius: '50%'
+                                                }} />
+                                                {colorList.find(c => c.value === selected)?.label}
+                                            </Box>
+                                        )}
                                     >
-                                        {colorList.map((option) => (
-                                            <MenuItem
-                                                key={option.value}
-                                                value={option.value}
-                                            >
-                                                {<CircleIcon style={{color: option.value}}/>}
+                                        {colorList.map((color) => (
+                                            <MenuItem key={color.value} value={color.value}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Box sx={{
+                                                        width: 20,
+                                                        height: 20,
+                                                        backgroundColor: color.value,
+                                                        borderRadius: '50%'
+                                                    }} />
+                                                    {color.label}
+                                                </Box>
                                             </MenuItem>
                                         ))}
-                                    </TextField>
-                                </div>
+                                    </Select>
+                                </FormControl>
 
                                 <TextField
-                                    className="text_input"
-                                    required
-                                    id="outlined-required"
+                                    autoFocus
+                                    margin="none" // Changed from "dense" to prevent misalignment
                                     label="Task Name"
-                                    // helperText="Name for task"
-                                    color='primary'
-                                    onChange={(event) => {
-                                        setName(event.target.value)
+                                    type="text"
+                                    sx={{ flex: 2 }} // Gives more space to text field
+                                    variant="outlined"
+                                    size="small"
+                                    required
+                                    value={taskName}
+                                    onChange={(e) => setTaskName(e.target.value)}
+                                    InputLabelProps={{
+                                        shrink: true // Ensures label doesn't float and cause misalignment
                                     }}
                                 />
-                            </div>
-                            {warningMessage && <p className="warning_message"> {warningMessage} </p>}
+                            </Box>
                         </DialogContent>
                         <DialogActions>
+                            <Button onClick={()=> setOpen(false)}>Cancel</Button>
                             <Button
-                                variant="outlined"
                                 onClick={handleClose}
-                                sx={{
-                                    ':hover': {
-                                        bgcolor: 'primary.main', // theme.palette.primary.main
-                                        color: 'white',
-                                    },
-                                }}
+                                variant="contained"
+                                disabled={!taskName.trim()}
                             >
-                                Add
+                                Save
                             </Button>
-                            <Button
-                                variant="outlined"
-                                color='primary'
-                                sx={{
-                                    ':hover': {
-                                        bgcolor: 'primary.main', // theme.palette.primary.main
-                                        color: 'white',
-                                    },
-                                }}
-                                onClick={() => {
-                                    setOpen(false)
-                                }}>Cancel</Button>
                         </DialogActions>
                     </Dialog>
                 </div>

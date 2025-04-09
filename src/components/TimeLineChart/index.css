@@ -1,0 +1,27 @@
+/* In your CSS file */
+.rbc-today {
+    background-color: white !important;
+}
+
+.rbc-label .rbc-time-header-gutter {
+    border: none !important;
+}
+.rbc-day-slot .rbc-time-slot {
+    border: none !important;
+}
+
+.rbc-time-slot {
+    /*border-bottom: none !important;*/
+    border: none !important;
+
+}
+.rbc-timeslot-group {
+    border: none !important;
+}
+.rbc-time-content {
+    border: none !important;
+}
+
+.rbc-row-content {
+    height: 10px !important;
+}

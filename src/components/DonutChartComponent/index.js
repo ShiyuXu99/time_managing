@@ -4,7 +4,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { formatSecondsToHourMinute } from "../../utils/generalCalculation";
 import {useAuth} from "../../hooks";
 import useTaskStore from "../../store/useTasksStore";
-import {getCategoryById} from "../../utils/tasksCategoryHelper";
+import {getCategoryById} from "../../utils/service/taskCategories";
 
 function DoughnutChart() {
     const [chartData, setChartData] = useState(null);

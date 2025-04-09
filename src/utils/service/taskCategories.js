@@ -146,3 +146,12 @@ export const getUserTaskCategoriesRealtime = (userId, callback) => {
         throw new Error(`Failed to fetch categories: ${error.message}`);
     }
 };
+
+
+export const getCategoryById =  (categoryId, taskCategories) => {
+    return taskCategories.find(cat => cat.id === categoryId) || {
+        name: 'Uncategorized',
+        color: '#9ca3af',
+        icon: 'help'
+    };
+}

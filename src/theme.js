@@ -13,6 +13,11 @@ export const theme = createTheme({
             main: '#64748B',
             contrastText: '#fff',
         },
+        text: {
+            primary: '#333333', // Main text color
+            secondary: '#3c4c65', // Secondary text color
+            disabled: '#AAAAAA', // Disabled text color
+        },
     },
     slider: {
         trackColor: "yellow",

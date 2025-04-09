@@ -11,7 +11,7 @@ import {
     Timestamp,
 } from 'firebase/firestore';
 import {db} from "../../firebase/config";
-import {updateDailySummary} from "./dailySummaries";
+import {addDailySummary, updateDailySummary} from "./dailySummaries";
 
 /**
  * Adds a new task to Firestore and updates daily summaries
@@ -25,14 +25,6 @@ export const addTask = async (userId, taskData) => {
     if (!taskData?.name?.trim()) throw new Error("Task name is required.");
     if (!taskData.startTime) throw new Error("Start time is required.");
 
-    const session = {
-        startTime: taskData.startTime,
-        endTime: taskData.endTime,
-        categoryId: taskData.categoryId
-    }
-
-    await updateDailySummary(userId,session);
-
     try {
         // Basic task structure
         const task = {
@@ -42,11 +34,15 @@ export const addTask = async (userId, taskData) => {
             startTime: Timestamp.fromDate(taskData.startTime),
             endTime: Timestamp.fromDate(taskData.endTime) || null,
             duration: taskData.duration || 0,
+            notes: taskData.notes || '',
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
         };
 
         const docRef = await addDoc(collection(db, 'tasks'), task);
+
+        await addDailySummaryUpdate(taskData, docRef.id, userId);
+
         return { id: docRef.id, ...task };
     } catch (error) {
         console.error("Firestore addTask error:", error);
@@ -72,11 +68,18 @@ export const updateTask = async (userId, taskId, updates) => {
     if (!taskSnap.exists()) throw new Error("Task not found.");
     if (taskSnap.data().userId !== userId) throw new Error("Unauthorized: Not your task.");
 
+    const duration = calculateDurationIfMissing(updates.startTime, updates.endTime);
+    const updatedData = {
+        ...updates,
+        duration
+    }
+
     try {
-        await updateDoc(taskRef, {
-            ...updates,
+        const result = await updateDoc(taskRef, {
+            ...updatedData,
             updatedAt: serverTimestamp()
         });
+        console.log(result, "this is result")
     } catch (error) {
         console.error("Firestore updateTask error:", error);
         throw new Error(`Failed to update task: ${error.message}`);
@@ -145,3 +148,31 @@ export const getTasksRealtime = (userId, callback, filters = {}) => {
         throw new Error(`Failed to fetch tasks: ${error.message}`);
     }
 };
+
+
+export const calculateDurationIfMissing = (start, end) => {
+        const startTime = start instanceof Timestamp
+            ? start.toDate()
+            : start;
+
+        const endTime = end instanceof Timestamp
+            ? end.toDate()
+            : end;
+
+        if (startTime && endTime) {
+            const durationMs = endTime - startTime;
+            return Math.floor(durationMs / 1000); // in seconds
+        }
+};
+
+const addDailySummaryUpdate = async (taskData, taskId, userId) => {
+    const session = {
+        startTime: taskData.startTime,
+        endTime: taskData.endTime,
+        categoryId: taskData.categoryId,
+        notes: taskData.notes || '',
+        taskId: taskId || '',
+    }
+
+    await addDailySummary(userId, session);
+}

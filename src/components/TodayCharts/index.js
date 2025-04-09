@@ -1,7 +1,6 @@
-import './index.css';
 import React from "react";
 import DoughnutChart from "../DonutChartComponent";
-import TimeLineChart from '../TimeLineChart';
+import TimeLineChart from '../TimeLineChart/TimeLineChart';
 import { Box } from "@mui/material";
 
 function TodayCharts() {
@@ -11,17 +10,17 @@ function TodayCharts() {
                 display: 'flex',
                 gap: '16px',
                 flexWrap: 'wrap',
-                width: '100%',
             }}
         >
             <Box
                 sx={{
                     flex: '1 1 0%',
-                    minWidth: '500px',
+                    minWidth: '300px',
                     borderRadius: '8px',
+                    maxHeight:'100%'
                 }}
             >
-                <TimeLineChart />
+                <TimeLineChart/>
             </Box>
 
             <Box

@@ -1,147 +1,156 @@
-import React from 'react'
-import {useEffect, useState} from 'react'
-import {Button, MenuItem, TextField, ThemeProvider} from "@mui/material";
-import CircleIcon from '@mui/icons-material/Circle';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import './index.css'
-import {theme} from "../../../theme";
-import EditTaskItem from "./EditTaskItem";
-import {getTitleAndColor} from "../../../utils/generalCalculation";
+import React, { useState } from 'react';
+import {
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+    TextField,
+    MenuItem,
+    Select,
+    FormControl,
+    InputLabel,
+    Box,
+    IconButton
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import {colorList} from "../../../utils/colorList";
+import {deleteTaskCategory, updateTaskCategory} from "../../../utils/service/taskCategories";
+import {getAuth} from "firebase/auth";
+import {serverTimestamp} from "firebase/firestore";
+import {addTask} from "../../../utils/service/taskAPI";
 
+function EditTaskTime({ open, setOpen, taskInfo }) {
+    const [taskName, setTaskName] = useState(taskInfo?.name || '');
+    const [selectedColor, setSelectedColor] = useState(taskInfo.color);
+    const [error, setError] = useState('');
+    const { currentUser } = getAuth();
+    const userId = currentUser?.uid;
 
-function EditTaskTime({open, setOpen, editItem, todayData, taskLists, taskByDate}) {
-    const [originalColor, originalName] = getTitleAndColor(editItem)
-    const [warning, setWarning] = useState(false);
-    const [warningMessage, setWarningMessage] = useState('')
-    const [color, setColor] = useState('');
-    const [name, setName] = useState('');
-    const updateTaskList = [];
+    console.log(taskInfo)
+    const handleClose = () => {
+        setOpen(false);
+        setError('');
+    };
 
-    const itemData = todayData && todayData[editItem]
-    const [recordChange, setRecordChange] = useState([])
+    const handleSave = async () => {
+        if (!taskName.trim()) {
+            setError('Task name is required');
+            return;
+        }
 
-    const colorList = [
-        {
-            value: '#597493',
-        },
-        {
-            value: '#959BB9',
-        },
-        {
-            value: '#7E9D86',
-        },
+        const updateData = {
+            name: taskName.trim(),
+            color: selectedColor,
+            icon: 'task',
+            createdAt: serverTimestamp(),
+        }
 
-    ];
+        try{
+            await updateTaskCategory(userId, taskInfo.id, updateData);
+            handleClose();
+        } catch (error) {
+            console.error('Error creating category:', error);
+            // setWarningMessage('Failed to create category. Please try again.');
+        }
+    };
 
-    const handleClose = async () => {
-        // if (!color || !name) {
-        //     setWarningMessage('Fields can not be empty')
-        //     setWarning(true);
-        //     return;
-        // }
-        // const result = await updateTaskList(name, color);
-        // if (!result?.success) {
-        //     setWarningMessage(result?.message)
-        //     setWarning(true);
-        // } else {
-        //     setOpen(false)
-        // }
-    }
+    const handleDelete = async () => {
+        if (window.confirm('Are you sure you want to delete this task? It will make your records uncategorized')) {
+            try {
+                await deleteTaskCategory(userId, taskInfo.id);
+                handleClose();
+            } catch (error) {
+                console.error('Error creating category:', error);
+                // setWarningMessage('Failed to create category. Please try again.');
+            }
+            handleClose();
+        }
+    };
 
     return (
-        <div>
-            <ThemeProvider theme={theme}>
-                <div>
-                    <Dialog
-                        PaperProps={{sx: { minHeight: '250px', width: '570px'}}}
-                        open={open} onClose={handleClose}>
-                        <DialogTitle>Edit Task</DialogTitle>
-                        <DialogContent>
-                            <div className="initialize_inputs">
-                                <div className="color_input">
-                                    <TextField
-                                        id="outlined-select-currency"
-                                        select
-                                        label="Select Color"
-                                        value={color}
-                                        style={{width: 140}}
-                                        onChange={(event) => {
-                                            setColor(event.target.value)
-                                        }}
-                                        color='primary'
-                                    >
-                                        {colorList.map((option) => (
-                                            <MenuItem
-                                                key={option.value}
-                                                value={option.value}
-                                            >
-                                                {<CircleIcon style={{color: option.value}}/>}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                </div>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            maxWidth="xs"
+            fullWidth
+            BackdropProps={{ style: { backgroundColor: 'rgba(0,0,0,0.1)' } }}
+        >
+            <DialogTitle>Edit Task</DialogTitle>
+            <DialogContent>
+                <Box sx={{ display: 'flex', gap: 2, pt: 1, alignItems: 'center' }}>
+                    <FormControl sx={{ flex: 1 }} size="small">
+                        <InputLabel id="color-select-label">Color</InputLabel>
+                        <Select
+                            labelId="color-select-label"
+                            value={selectedColor}
+                            label="Color"
+                            onChange={(e) => setSelectedColor(e.target.value)}
+                            renderValue={(selected) => (
+                                <Box sx={{
+                                    width: 20,
+                                    height: 20,
+                                    backgroundColor: selected,
+                                    borderRadius: '50%'
+                                }} />
+                            )}
+                        >
+                            {colorList.map((color) => (
+                                <MenuItem key={color.value} value={color.value}>
+                                    <Box sx={{
+                                        width: 20,
+                                        height: 20,
+                                        backgroundColor: color.value,
+                                        borderRadius: '50%'
+                                    }} />
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
 
-                                <TextField
-                                    className="text_input"
-                                    required
-                                    id="outlined-required"
-                                    label="Task Name"
-                                    // helperText="Name for task"
-                                    color='primary'
-                                    onChange={(event) => {
-                                        setName(event.target.value)
-                                    }}
-                                />
-                            </div>
-                            {warning && <p className="warning_message"> {warningMessage} </p>}
-                            {
-                                itemData && itemData.map((itemElement, index) =>{
-                                    return(
-                                        <EditTaskItem
-                                            key={index}
-                                            editItem={editItem}
-                                            recordChange={recordChange}
-                                            setRecordChange={setRecordChange}
-                                            itemElement={itemElement}
-                                            index={index}
-                                        />
-                                        )
-                                })
-                            }
-
-                        </DialogContent>
-                        <DialogActions>
-                            <Button
-                                variant="outlined"
-                                onClick={handleClose}
-                                sx={{
-                                    ':hover': {
-                                        bgcolor: 'primary.main', // theme.palette.primary.main
-                                        color: 'white',
-                                    },
-                                }}
-                            >
-                                Save
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                color='primary'
-                                sx={{
-                                    ':hover': {
-                                        bgcolor: 'primary.main', // theme.palette.primary.main
-                                        color: 'white',
-                                    },
-                                }}
-                                onClick={() => setOpen(false)}>Cancel</Button>
-                        </DialogActions>
-                    </Dialog>
-                </div>
-            </ThemeProvider>
-        </div>
-    )
+                    <TextField
+                        autoFocus
+                        margin="none"
+                        label="Task Name"
+                        type="text"
+                        sx={{ flex: 2 }}
+                        variant="outlined"
+                        size="small"
+                        required
+                        value={taskName}
+                        onChange={(e) => {
+                            setTaskName(e.target.value);
+                            setError('');
+                        }}
+                        error={!!error}
+                        helperText={error}
+                        InputLabelProps={{ shrink: true }}
+                    />
+                </Box>
+            </DialogContent>
+            <DialogActions>
+                <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <IconButton
+                        onClick={handleDelete}
+                        color="error"
+                        sx={{ ml: 1 }}
+                    >
+                        <DeleteIcon />
+                    </IconButton>
+                    <Box>
+                        <Button onClick={handleClose}>Cancel</Button>
+                        <Button
+                            onClick={handleSave}
+                            variant="contained"
+                            sx={{ ml: 1 }}
+                        >
+                            Save
+                        </Button>
+                    </Box>
+                </Box>
+            </DialogActions>
+        </Dialog>
+    );
 }
 
-export default EditTaskTime
+export default EditTaskTime;
